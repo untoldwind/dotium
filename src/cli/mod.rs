@@ -26,7 +26,7 @@ impl Subcommand {
             Subcommand::GenKey(opts) => gen_key::run(opts),
             Subcommand::Completions(opts) => completions::run(opts),
             Subcommand::Init(opts) => init::run(opts, config),
-            Subcommand::InitRepo(opts) => init_repo::run(opts),
+            Subcommand::InitRepo(opts) => init_repo::run(opts, config),
         }
     }
 }

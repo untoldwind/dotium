@@ -23,7 +23,7 @@ pub fn config_dir() -> Result<PathBuf, Box<dyn Error>> {
 pub fn read_config(maybe_config_file: &Option<PathBuf>, maybe_keys_file: &Option<PathBuf>) -> Result<ConfigurationHolder, Box<dyn Error>> {
     let config_file = match maybe_config_file {
         Some(file) => file.clone(),
-        None => config_dir()?.join("config.toml"),
+        None => config_dir()?.join("config.json"),
     };
     let keys_file = match maybe_keys_file {
         Some(file) => file.clone(),
@@ -31,9 +31,9 @@ pub fn read_config(maybe_config_file: &Option<PathBuf>, maybe_keys_file: &Option
     };
     
     let configuration = if config_file.is_file() {
-       let content = fs::read_to_string(&config_file)?;
+       let mut file = fs::File::open(&config_file)?;
 
-       Some(toml::from_str(&content)?)
+       Some(serde_json::from_reader(&mut file)?)
     } else {
         None
     };

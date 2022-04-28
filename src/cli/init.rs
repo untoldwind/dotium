@@ -32,21 +32,21 @@ pub fn run(opts: &InitOptions, config: ConfigurationHolder) -> Result<(), Box<dy
     println!("Will create new configuration");
     println!("  Hostname:     {}", bold.apply_to(&name));
     println!("  Config file : {}", bold.apply_to(config.config_file.to_string_lossy()));
-    println!("  Keys file   : {}", bold.apply_to(config.config_file.to_string_lossy()));
+    println!("  Keys file   : {}", bold.apply_to(config.keys_file.to_string_lossy()));
     println!();
 
-    if (Confirm::new().with_prompt("Continue").interact()?) {
+    if Confirm::new().with_prompt("Continue").interact()? {
         do_init(name, config.config_file, config.keys_file)?;
     }
 
     Ok(())
 }
 
-fn do_init(hostname: String, config_file: PathBuf, keys_file: PathBuf) -> Result<(), Box<dyn Error>> {
-    if let Some(parent) = config_file.parent() {
+fn do_init(hostname: String, config_file_name: PathBuf, keys_file_name: PathBuf) -> Result<(), Box<dyn Error>> {
+    if let Some(parent) = config_file_name.parent() {
         fs::create_dir_all(parent)?;
     }
-    if let Some(parent) = keys_file.parent() {
+    if let Some(parent) = keys_file_name.parent() {
         fs::create_dir_all(parent)?;
     }
 
@@ -58,11 +58,11 @@ fn do_init(hostname: String, config_file: PathBuf, keys_file: PathBuf) -> Result
     let configuration = Configuration {
         default_recipient,
     };
-    let config_file_content = toml::to_string_pretty(&configuration)?;
-    fs::write(config_file, config_file_content)?;
+    let mut config_file = fs::OpenOptions::new().write(true).create_new(true).open(config_file_name)?;
+    serde_json::to_writer_pretty(&mut config_file, &configuration)?;
     
-    let file = fs::OpenOptions::new().write(true).append(true).create(true).open(keys_file)?;
-    write_identity(&file, sk)?;
+    let key_file = fs::OpenOptions::new().write(true).append(true).create(true).open(keys_file_name)?;
+    write_identity(&key_file, sk)?;
 
     Ok(())
 }

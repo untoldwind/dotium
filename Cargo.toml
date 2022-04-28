@@ -6,12 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ansi_term = "0"
-age = "0"
+age = { version = "0", features = ["armor", "ssh"] }
 chrono = "0"
+console = "0"
+dialoguer = "0"
 clap = { version = "3", features = ["cargo", "derive"] }
+clap_complete = "3"
 diff = "0"
-env_logger = "0"
-log = "0"
+dirs = "4"
+gethostname = "0"
+serde = { version = "1", features = ["derive"] }
 tera = "1"
 toml = "0"

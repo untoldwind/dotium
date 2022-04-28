@@ -1,26 +1,47 @@
+use std::{path::PathBuf, error::Error};
+
 use clap::Parser;
-use log::error;
+use console::{Style, set_colors_enabled};
 
 mod cli;
-
+mod config;
+mod model;
 
 #[derive(Debug, Parser)]
 #[clap(name = "dotium", version = clap::crate_version!())]
-struct DotiumOptions {
+pub struct DotiumOptions {
+    #[clap(short, long, help = "Config file to use")]
+    config: Option<PathBuf>,
+
+    #[clap(short, long, help = "Secret age keys file to use")]
+    keys: Option<PathBuf>,
+
+    #[clap(long, help = "Do not use ansi colors")]
+    no_colors: bool,
+
     #[clap(subcommand)]
     sub_command: cli::Subcommand,
 }
 
 fn main() {
-    env_logger::builder()
-        .format_timestamp(None)
-        .filter_level(log::LevelFilter::Off)
-        .parse_default_env()
-        .init();
-
     let opts = DotiumOptions::parse();
 
-    if let Err(err) = opts.sub_command.run() {
-        error!("{}", err)
+    if opts.no_colors {
+        set_colors_enabled(false);
     }
+
+    let config = match config::read_config(&opts.config, &opts.keys) {
+        Ok(config) => config,
+        Err(err) => exit_on_error(err)
+    };
+
+    if let Err(err) = opts.sub_command.run(config) {
+        exit_on_error(err);
+    }
+}
+
+fn exit_on_error(err: Box<dyn Error>) -> ! {
+    let style = Style::new().bold().red();
+    println!("{}", style.apply_to(format!("{}", err)));
+    std::process::exit(1);
 }

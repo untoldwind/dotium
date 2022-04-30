@@ -8,11 +8,12 @@ use crate::{config::ConfigurationHolder, repository::Repository};
 
 #[derive(Debug, Parser)]
 pub struct InitRepoCommand {
-    directory: Option<PathBuf>,
+    #[clap(default_value = ".")]
+    directory: PathBuf,
 }
 
 impl InitRepoCommand {
-    pub fn run(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    pub fn run(self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
         let recipient =
             match config.configuration {
                 Some(config) => config.default_recipient,
@@ -21,9 +22,7 @@ impl InitRepoCommand {
                         .into(),
                 ),
             };
-        let directory = self.directory.clone().unwrap_or_else(|| PathBuf::from("."));
-
-        if Repository::open(&directory).is_ok() {
+        if Repository::open(&self.directory).is_ok() {
             return Err("Already initialized".into());
         }
 
@@ -31,14 +30,14 @@ impl InitRepoCommand {
         println!("Initialize repository");
         println!(
             "  Directory: {}",
-            bold.apply_to(directory.to_string_lossy())
+            bold.apply_to(self.directory.to_string_lossy())
         );
         println!("  Reciepient:      {}", bold.apply_to(&recipient.name));
 
         println!();
 
         if Confirm::new().with_prompt("Continue").interact()? {
-            Repository::init(directory, recipient)?;
+            Repository::init(self.directory, recipient)?;
         }
 
         Ok(())

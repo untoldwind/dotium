@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use clap::{ArgEnum, PossibleValue};
 use serde::{Deserialize, Serialize};
 
 use super::Recipient;
@@ -27,7 +28,19 @@ pub struct FileDescriptor {
     pub action: FileAction,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum FileAction {
     AsIs,
+}
+
+impl ArgEnum for FileAction {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[FileAction::AsIs]
+    }
+
+    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
+        Some(match self {
+            FileAction::AsIs => PossibleValue::new("as-is"),
+        })
+    }
 }

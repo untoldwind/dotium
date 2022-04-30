@@ -1,7 +1,8 @@
-use std::{path::PathBuf, error::Error};
+use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
-use console::{Style, set_colors_enabled};
+use config::ConfigurationHolder;
+use console::{set_colors_enabled, Style};
 
 mod cli;
 mod config;
@@ -30,9 +31,9 @@ fn main() {
         set_colors_enabled(false);
     }
 
-    let config = match config::read_config(&opts.config, &opts.keys) {
+    let config = match ConfigurationHolder::read_config(&opts.config, &opts.keys) {
         Ok(config) => config,
-        Err(err) => exit_on_error(err)
+        Err(err) => exit_on_error(err),
     };
 
     if let Err(err) = opts.sub_command.run(config) {

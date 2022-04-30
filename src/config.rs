@@ -1,6 +1,6 @@
 use std::{error::Error, fs, path::PathBuf};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::model::Recipient;
 
@@ -16,31 +16,38 @@ pub struct ConfigurationHolder {
     pub configuration: Option<Configuration>,
 }
 
-pub fn config_dir() -> Result<PathBuf, Box<dyn Error>> {
-    dirs::config_dir().map(|dir| dir.join("dotium")).ok_or_else(|| "Unable to get config dir".into())
-}
+impl ConfigurationHolder {
+    pub fn config_dir() -> Result<PathBuf, Box<dyn Error>> {
+        dirs::config_dir()
+            .map(|dir| dir.join("dotium"))
+            .ok_or_else(|| "Unable to get config dir".into())
+    }
 
-pub fn read_config(maybe_config_file: &Option<PathBuf>, maybe_keys_file: &Option<PathBuf>) -> Result<ConfigurationHolder, Box<dyn Error>> {
-    let config_file = match maybe_config_file {
-        Some(file) => file.clone(),
-        None => config_dir()?.join("config.json"),
-    };
-    let keys_file = match maybe_keys_file {
-        Some(file) => file.clone(),
-        None => config_dir()?.join("keys.txt"),
-    };
-    
-    let configuration = if config_file.is_file() {
-       let mut file = fs::File::open(&config_file)?;
+    pub fn read_config(
+        maybe_config_file: &Option<PathBuf>,
+        maybe_keys_file: &Option<PathBuf>,
+    ) -> Result<ConfigurationHolder, Box<dyn Error>> {
+        let config_file = match maybe_config_file {
+            Some(file) => file.clone(),
+            None => Self::config_dir()?.join("config.json"),
+        };
+        let keys_file = match maybe_keys_file {
+            Some(file) => file.clone(),
+            None => Self::config_dir()?.join("keys.txt"),
+        };
 
-       Some(serde_json::from_reader(&mut file)?)
-    } else {
-        None
-    };
+        let configuration = if config_file.is_file() {
+            let mut file = fs::File::open(&config_file)?;
 
-    Ok(ConfigurationHolder {
-        config_file,
-        keys_file,
-        configuration,
-    })
+            Some(serde_json::from_reader(&mut file)?)
+        } else {
+            None
+        };
+
+        Ok(ConfigurationHolder {
+            config_file,
+            keys_file,
+            configuration,
+        })
+    }
 }

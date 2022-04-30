@@ -2,7 +2,7 @@ use std::{error::Error, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::model::Recipient;
+use crate::{model::Recipient, secret_key::SecretKey};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Configuration {
@@ -49,5 +49,32 @@ impl ConfigurationHolder {
             keys_file,
             configuration,
         })
+    }
+
+    pub fn init(&self, hostname: &str) -> Result<(), Box<dyn Error>> {
+        if let Some(parent) = self.config_file.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        if let Some(parent) = self.keys_file.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        let sk = SecretKey::generate();
+        let default_recipient = sk.as_recipient(hostname);
+        let configuration = Configuration { default_recipient };
+        let mut config_file = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&self.config_file)?;
+        serde_json::to_writer_pretty(&mut config_file, &configuration)?;
+
+        let key_file = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .create(true)
+            .open(&self.keys_file)?;
+        sk.write_to(&key_file)?;
+
+        Ok(())
     }
 }

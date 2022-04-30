@@ -1,13 +1,10 @@
-use std::{error::Error, fs, path::PathBuf};
+use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 use console::Style;
 use dialoguer::Confirm;
 
-use crate::{
-    config::ConfigurationHolder,
-    model::{Descriptor, Recipient, RootDescriptor},
-};
+use crate::{config::ConfigurationHolder, repository::Repository};
 
 #[derive(Debug, Parser)]
 pub struct InitRepoCommand {
@@ -24,46 +21,26 @@ impl InitRepoCommand {
                         .into(),
                 ),
             };
-        let repo_file = self
-            .directory
-            .clone()
-            .unwrap_or_else(|| PathBuf::from("."))
-            .join("dotium.json");
+        let directory = self.directory.clone().unwrap_or_else(|| PathBuf::from("."));
 
-        if repo_file.is_file() {
+        if Repository::open(&directory).is_ok() {
             return Err("Already initialized".into());
         }
 
         let bold = Style::new().bold();
         println!("Initialize repository");
         println!(
-            "  Repository file: {}",
-            bold.apply_to(repo_file.to_string_lossy())
+            "  Directory: {}",
+            bold.apply_to(directory.to_string_lossy())
         );
         println!("  Reciepient:      {}", bold.apply_to(&recipient.name));
 
         println!();
 
         if Confirm::new().with_prompt("Continue").interact()? {
-            do_init_repo(recipient, repo_file)?;
+            Repository::init(directory, recipient)?;
         }
 
         Ok(())
     }
-}
-
-fn do_init_repo(recipient: Recipient, repo_file_name: PathBuf) -> Result<(), Box<dyn Error>> {
-    let descriptor = Descriptor::Root(RootDescriptor {
-        recipients: vec![recipient],
-        recipient_requests: vec![],
-        directories: vec![],
-    });
-
-    let mut repo_file = fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(repo_file_name)?;
-    serde_json::to_writer_pretty(&mut repo_file, &descriptor)?;
-
-    Ok(())
 }

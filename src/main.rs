@@ -7,6 +7,8 @@ use console::{set_colors_enabled, Style};
 mod cli;
 mod config;
 mod model;
+mod repository;
+mod secret_key;
 
 #[derive(Debug, Parser)]
 #[clap(name = "dotium", version = clap::crate_version!())]

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 
 use super::Recipient;
@@ -9,14 +11,23 @@ pub struct RootDescriptor {
     #[serde(default)]
     pub recipient_requests: Vec<Recipient>,
     #[serde(default)]
-    pub directories: Vec<String>,
+    pub directories: Vec<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DirectoryDescriptor {}
+pub struct DirectoryDescriptor {
+    #[serde(default)]
+    pub files: Vec<FileDescriptor>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum Descriptor {
-    Root(RootDescriptor),
-    Directory(DirectoryDescriptor),
+pub struct FileDescriptor {
+    pub source: PathBuf,
+    pub target: PathBuf,
+    pub action: FileAction,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum FileAction {
+    AsIs,
 }

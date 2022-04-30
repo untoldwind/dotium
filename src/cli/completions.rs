@@ -15,7 +15,7 @@ impl CompletionCommand {
         let mut cmd = crate::DotiumOptions::command();
         let name = cmd.get_name().to_string();
 
-        generate(self.shell.clone(), &mut cmd, name, &mut io::stdout());
+        generate(self.shell, &mut cmd, name, &mut io::stdout());
 
         Ok(())
     }

@@ -1,15 +1,18 @@
 use std::{error::Error, fs, path::PathBuf};
 
-use crate::{model::DirectoryDescriptor, repository::Repository};
+use crate::{
+    model::{DirectoryDescriptor, FileDescriptor},
+    repository::Repository,
+};
 
 pub fn create_from_target(
     repository: &Repository,
-    source: &PathBuf,
-    target: &PathBuf,
+    dir_path: &PathBuf,
+    file: &FileDescriptor,
 ) -> Result<(), Box<dyn Error>> {
     let home = dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
-    let target = home.join(target);
-    let source = repository.directory.join(source);
+    let target = home.join(&file.target);
+    let source = repository.directory.join(dir_path).join(&file.source);
 
     if let Some(parent) = source.parent() {
         fs::create_dir_all(parent)?;
@@ -21,8 +24,9 @@ pub fn create_from_target(
 
 pub fn get_content(
     repository: &Repository,
+    dir_path: &PathBuf,
     dir: &DirectoryDescriptor,
-    source: &PathBuf,
+    file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
     todo!()
 }

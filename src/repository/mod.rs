@@ -1,12 +1,13 @@
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
-use crate::model::{DirectoryDescriptor, FileDescriptor, Recipient, RootDescriptor};
+use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
 
 pub use self::outcome::Outcome;
+pub use self::path_translate::FileRef;
 
 mod actions;
 mod outcome;
-pub mod path_translate;
+mod path_translate;
 
 pub struct Repository {
     pub directory: PathBuf,
@@ -68,51 +69,51 @@ impl Repository {
         Ok(repo)
     }
 
-    pub fn add_files<I: IntoIterator<Item = FileDescriptor>>(
+    pub fn add_files<I: IntoIterator<Item = PathBuf>>(
         &mut self,
-        files: I,
-    ) -> Result<(), Box<dyn Error>> {
-        for mut file in files {
-            let source = if !file.source.is_relative() {
-                if !file.source.starts_with(&self.directory) {
-                    return Err(format!(
-                        "{} is not inside repository",
-                        file.source.to_string_lossy()
-                    )
-                    .into());
-                } else {
-                    file.source.strip_prefix(&self.directory)?
-                }
-            } else {
-                &file.source
-            };
+        action: FileAction,
+        targets: I,
+    ) -> Result<Vec<FileRef>, Box<dyn Error>> {
+        let mut added = Vec::new();
+        for target in targets {
+            let file_ref = FileRef::new(self, target, action)?;
 
-            actions::create_from_target(self, &file)?;
-
-            let parent = source.parent().map(|p| p.to_path_buf()).unwrap_or_default();
-            file.source = file.source.strip_prefix(&parent)?.to_path_buf();
-
-            if let Some(dir) = self.dirs.get_mut(&parent) {
-                dir.files.push(file);
-            } else {
-                self.dirs
-                    .insert(parent, DirectoryDescriptor { files: vec![file] });
+            if file_ref.absolute_source().exists() {
+                return Err(format!("{} already in repository", file_ref).into());
             }
+
+            actions::create_from_target(self, &file_ref.dir_path, &file_ref.file)?;
+
+            if let Some(dir) = self.dirs.get_mut(&file_ref.dir_path) {
+                dir.files.push(file_ref.file.clone());
+            } else {
+                self.dirs.insert(
+                    file_ref.dir_path.clone(),
+                    DirectoryDescriptor {
+                        files: vec![file_ref.file.clone()],
+                    },
+                );
+            }
+
+            added.push(file_ref)
         }
         self.root.directories = self.dirs.keys().cloned().collect();
-        self.store()
+        self.root.directories.sort();
+
+        Ok(added)
     }
 
     pub fn outcomes(
         &self,
     ) -> Result<impl Iterator<Item = Result<Outcome, Box<dyn Error + '_>>>, Box<dyn Error + '_>>
     {
-        let home = dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
+        let home =
+            dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
 
         Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
             let home_cloned = home.clone();
             dir.files.iter().map(move |file| {
-                let content = actions::get_content(self, dir, file)?;
+                let content = actions::get_content(self, dir_path, dir, file)?;
 
                 Ok(Outcome {
                     target: home_cloned.join(&file.target),

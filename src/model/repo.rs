@@ -21,9 +21,9 @@ pub struct DirectoryDescriptor {
     pub files: Vec<FileDescriptor>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileDescriptor {
-    pub source: PathBuf,
+    pub source: String,
     pub target: PathBuf,
     pub action: FileAction,
 }

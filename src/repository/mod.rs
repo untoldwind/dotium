@@ -2,7 +2,10 @@ use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileDescriptor, Recipient, RootDescriptor};
 
+pub use self::outcome::Outcome;
+
 mod actions;
+mod outcome;
 pub mod path_translate;
 
 pub struct Repository {
@@ -98,6 +101,25 @@ impl Repository {
         }
         self.root.directories = self.dirs.keys().cloned().collect();
         self.store()
+    }
+
+    pub fn outcomes(
+        &self,
+    ) -> Result<impl Iterator<Item = Result<Outcome, Box<dyn Error + '_>>>, Box<dyn Error + '_>>
+    {
+        let home = dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
+
+        Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
+            let home_cloned = home.clone();
+            dir.files.iter().map(move |file| {
+                let content = actions::get_content(self, dir, file)?;
+
+                Ok(Outcome {
+                    target: home_cloned.join(&file.target),
+                    content,
+                })
+            })
+        }))
     }
 
     pub fn store(&self) -> Result<(), Box<dyn Error>> {

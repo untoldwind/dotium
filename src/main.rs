@@ -9,6 +9,7 @@ mod config;
 mod model;
 mod repository;
 mod secret_key;
+mod utils;
 
 #[derive(Debug, Parser)]
 #[clap(name = "dotium", version = clap::crate_version!())]

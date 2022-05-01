@@ -1,6 +1,6 @@
 use std::{error::Error, fs, path::PathBuf};
 
-use crate::repository::Repository;
+use crate::{model::DirectoryDescriptor, repository::Repository};
 
 pub fn create_from_target(
     repository: &Repository,
@@ -17,4 +17,12 @@ pub fn create_from_target(
     fs::copy(target, source)?;
 
     Ok(())
+}
+
+pub fn get_content(
+    repository: &Repository,
+    dir: &DirectoryDescriptor,
+    source: &PathBuf,
+) -> Result<String, Box<dyn Error>> {
+    todo!()
 }

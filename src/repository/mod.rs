@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
 
-pub use self::outcome::Outcome;
+pub use self::outcome::{Outcome, Changes};
 pub use self::path_translate::FileRef;
 
 mod actions;
@@ -105,7 +105,7 @@ impl Repository {
 
     pub fn outcomes(
         &self,
-    ) -> Result<impl Iterator<Item = Result<Outcome, Box<dyn Error + '_>>>, Box<dyn Error + '_>>
+    ) -> Result<impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + '_, Box<dyn Error + 'static>>
     {
         let home =
             dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;

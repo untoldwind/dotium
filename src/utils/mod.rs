@@ -1,1 +1,1 @@
-mod color_diff;
+pub mod color_diff;

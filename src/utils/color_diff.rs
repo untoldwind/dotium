@@ -16,6 +16,23 @@ lazy_static! {
     static ref on_green: Style = Style::new().on_green().white();
 }
 
+pub struct ColorDiff<'a> {
+    expected: &'a str,
+    actual: &'a str
+}
+
+impl<'a> ColorDiff<'a> {
+    pub fn new(expected: &'a str, actual: &'a str) -> Self {
+        ColorDiff { expected, actual }
+    }
+}
+
+impl<'a> fmt::Display for ColorDiff<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        color_diff(f, &self.expected, &self.actual)
+    }
+}
+
 pub fn color_diff(f: &mut fmt::Formatter, expected: &str, actual: &str) -> fmt::Result {
     let changeset = diff(expected, actual);
     fmt_changeset(f, &changeset)

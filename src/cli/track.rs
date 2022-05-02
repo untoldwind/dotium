@@ -2,15 +2,16 @@ use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 use console::Style;
-use dialoguer::Confirm;
+use dialoguer::{Confirm, theme::ColorfulTheme};
 use std::fs;
 
 use crate::{model::FileAction, repository::Repository};
 
 #[derive(Debug, Parser)]
 pub struct TrackCommand {
+    #[clap(help = "File or directory to add to repository")]
     file_or_directory: PathBuf,
-    #[clap(short, long, default_value = ".")]
+    #[clap(short, long, default_value = ".", help = "Repository to use")]
     repository: PathBuf,
     #[clap(short, long, arg_enum, default_value = "as-is")]
     action: FileAction,
@@ -59,7 +60,7 @@ impl TrackCommand {
 
         println!();
 
-        if Confirm::new().with_prompt("Continue").interact()? {
+        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Continue").default(true).interact_opt()? {
             repository.store()?;
         } else {
             for file_ref in added {

@@ -9,7 +9,7 @@ edition = "2021"
 age = { version = "0", features = ["armor", "ssh"] }
 chrono = "0"
 console = "0"
-dialoguer = "0"
+dialoguer = { version = "0", features = ["fuzzy-select"] }
 clap = { version = "3", features = ["cargo", "derive"] }
 clap_complete = "3"
 dissimilar = "1"

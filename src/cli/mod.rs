@@ -13,7 +13,7 @@ mod track;
 
 #[derive(Debug, Parser)]
 pub enum Subcommand {
-    #[clap(about = "Apply repository to current config")]
+    #[clap(about = "Apply repository contents to current config")]
     Apply(apply::ApplyCommand),
     #[clap(about = "Generate shell completions")]
     Completions(completions::CompletionCommand),

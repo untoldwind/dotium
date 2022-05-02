@@ -2,7 +2,7 @@ use std::error::Error;
 
 use clap::Parser;
 use console::Style;
-use dialoguer::Confirm;
+use dialoguer::{Confirm, theme::ColorfulTheme};
 use gethostname::gethostname;
 
 use crate::config::ConfigurationHolder;
@@ -38,7 +38,7 @@ impl InitCommand {
         );
         println!();
 
-        if Confirm::new().with_prompt("Continue").interact()? {
+        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Continue").default(true).interact_opt()? {
             config.init(&name)?;
         }
 

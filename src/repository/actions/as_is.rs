@@ -28,5 +28,9 @@ pub fn get_content(
     dir: &DirectoryDescriptor,
     file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
-    todo!()
+    let source = repository.directory.join(dir_path).join(&file.source);
+
+    let content = fs::read_to_string(source)?;
+
+    Ok(content)
 }

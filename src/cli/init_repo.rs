@@ -2,7 +2,7 @@ use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 use console::Style;
-use dialoguer::Confirm;
+use dialoguer::{Confirm, theme::ColorfulTheme};
 
 use crate::{config::ConfigurationHolder, repository::Repository};
 
@@ -36,7 +36,7 @@ impl InitRepoCommand {
 
         println!();
 
-        if Confirm::new().with_prompt("Continue").interact()? {
+        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Continue").default(true).interact_opt()? {
             Repository::init(self.directory, recipient)?;
         }
 

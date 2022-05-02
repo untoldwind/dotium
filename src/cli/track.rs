@@ -26,9 +26,7 @@ impl TrackCommand {
         if self.file_or_directory.is_file() {
             targets.push(self.file_or_directory.clone());
         } else if self.file_or_directory.is_dir() {
-            for file in self.file_or_directory.read_dir()? {
-                targets.push(file?.path().to_path_buf());
-            }
+            collect_targets(&mut targets, &self.file_or_directory)?;
         } else {
             return Err(format!(
                 "{} does not exists",
@@ -71,3 +69,16 @@ impl TrackCommand {
         Ok(())
     }
 }
+
+fn collect_targets(targets: &mut Vec<PathBuf>, directory: &PathBuf) -> Result<(), Box<dyn Error>> {
+    for entry in directory.read_dir()? {
+        let file = entry?.path();
+        
+        if file.is_file() {
+            targets.push(file);
+        } else if file.is_dir() {
+            collect_targets(targets, &file)?;
+        }
+    }
+    Ok(())
+} 

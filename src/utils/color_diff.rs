@@ -18,7 +18,7 @@ lazy_static! {
 
 pub struct ColorDiff<'a> {
     expected: &'a str,
-    actual: &'a str
+    actual: &'a str,
 }
 
 impl<'a> ColorDiff<'a> {

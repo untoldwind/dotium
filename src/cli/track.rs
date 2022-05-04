@@ -2,10 +2,13 @@ use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 use console::Style;
-use dialoguer::{Confirm, theme::ColorfulTheme};
+use dialoguer::{theme::ColorfulTheme, Confirm};
 use std::fs;
 
-use crate::{model::FileAction, repository::Repository};
+use crate::{
+    model::FileAction,
+    repository::{DefaultEnvironment, Repository},
+};
 
 #[derive(Debug, Parser)]
 pub struct TrackCommand {
@@ -19,7 +22,7 @@ pub struct TrackCommand {
 
 impl TrackCommand {
     pub fn run(&self) -> Result<(), Box<dyn Error>> {
-        let mut repository = Repository::open(&self.repository)?;
+        let mut repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
 
         let mut targets = Vec::new();
 
@@ -58,7 +61,11 @@ impl TrackCommand {
 
         println!();
 
-        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Continue").default(true).interact_opt()? {
+        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt("Continue")
+            .default(true)
+            .interact_opt()?
+        {
             repository.store()?;
         } else {
             for file_ref in added {
@@ -73,7 +80,7 @@ impl TrackCommand {
 fn collect_targets(targets: &mut Vec<PathBuf>, directory: &PathBuf) -> Result<(), Box<dyn Error>> {
     for entry in directory.read_dir()? {
         let file = entry?.path();
-        
+
         if file.is_file() {
             targets.push(file);
         } else if file.is_dir() {
@@ -81,4 +88,4 @@ fn collect_targets(targets: &mut Vec<PathBuf>, directory: &PathBuf) -> Result<()
         }
     }
     Ok(())
-} 
+}

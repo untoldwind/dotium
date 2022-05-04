@@ -6,10 +6,12 @@ use std::{
 
 use crate::model::{FileAction, FileDescriptor};
 
-use super::Repository;
+use super::{Environment, Repository};
 
-pub fn relative_target_file<P: AsRef<Path>>(source: P) -> Result<PathBuf, Box<dyn Error>> {
-    let home = dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
+pub fn relative_target_file<P: AsRef<Path>, E: Environment>(
+    source: P,
+) -> Result<PathBuf, Box<dyn Error>> {
+    let home = E::home_dir()?;
 
     Ok(source.as_ref().strip_prefix(home)?.to_path_buf())
 }
@@ -47,12 +49,12 @@ pub struct FileRef {
 }
 
 impl FileRef {
-    pub fn new<P: AsRef<Path>>(
-        repository: &Repository,
+    pub fn new<P: AsRef<Path>, E: Environment>(
+        repository: &Repository<E>,
         target_file: P,
         action: FileAction,
     ) -> Result<Self, Box<dyn Error>> {
-        let target = relative_target_file(target_file)?;
+        let target = relative_target_file::<_, E>(target_file)?;
         let (dir_path, source) = source_file_from_target(&target);
 
         Ok(FileRef {

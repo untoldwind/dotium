@@ -1,22 +1,31 @@
+use std::marker::PhantomData;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
 
-pub use self::outcome::{Outcome, Changes};
+pub use self::environment::*;
+pub use self::outcome::{Changes, Outcome};
 pub use self::path_translate::FileRef;
 
 mod actions;
+mod environment;
 mod outcome;
 mod path_translate;
+#[cfg(test)]
+mod tests;
 
-pub struct Repository {
+pub struct Repository<E> {
     pub directory: PathBuf,
     root_file: PathBuf,
     root: RootDescriptor,
     dirs: HashMap<PathBuf, DirectoryDescriptor>,
+    phantom: PhantomData<E>,
 }
 
-impl Repository {
+impl<E> Repository<E>
+where
+    E: Environment,
+{
     pub fn open<P: Into<PathBuf>>(directory: P) -> Result<Self, Box<dyn Error>> {
         let directory = directory.into();
         let root_file = directory.join("dotium.json");
@@ -46,6 +55,7 @@ impl Repository {
             root_file,
             root,
             dirs,
+            phantom: PhantomData,
         })
     }
 
@@ -63,6 +73,7 @@ impl Repository {
             root_file,
             root,
             dirs: HashMap::new(),
+            phantom: PhantomData,
         };
         repo.store()?;
 
@@ -105,10 +116,11 @@ impl Repository {
 
     pub fn outcomes(
         &self,
-    ) -> Result<impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + '_, Box<dyn Error + 'static>>
-    {
-        let home =
-            dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?;
+    ) -> Result<
+        impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + '_,
+        Box<dyn Error + 'static>,
+    > {
+        let home = E::home_dir()?;
 
         Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
             let home_cloned = home.clone();

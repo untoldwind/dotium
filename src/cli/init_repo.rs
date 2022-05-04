@@ -2,9 +2,12 @@ use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
 use console::Style;
-use dialoguer::{Confirm, theme::ColorfulTheme};
+use dialoguer::{theme::ColorfulTheme, Confirm};
 
-use crate::{config::ConfigurationHolder, repository::Repository};
+use crate::{
+    config::ConfigurationHolder,
+    repository::{DefaultEnvironment, Repository},
+};
 
 #[derive(Debug, Parser)]
 pub struct InitRepoCommand {
@@ -22,7 +25,7 @@ impl InitRepoCommand {
                         .into(),
                 ),
             };
-        if Repository::open(&self.directory).is_ok() {
+        if Repository::<DefaultEnvironment>::open(&self.directory).is_ok() {
             return Err("Already initialized".into());
         }
 
@@ -36,8 +39,12 @@ impl InitRepoCommand {
 
         println!();
 
-        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default()).with_prompt("Continue").default(true).interact_opt()? {
-            Repository::init(self.directory, recipient)?;
+        if let Some(true) = Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt("Continue")
+            .default(true)
+            .interact_opt()?
+        {
+            Repository::<DefaultEnvironment>::init(self.directory, recipient)?;
         }
 
         Ok(())

@@ -2,12 +2,12 @@ use std::{error::Error, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, FileDescriptor};
 
-use super::Repository;
+use super::{Environment, Repository};
 
 mod as_is;
 
-pub fn create_from_target(
-    repository: &Repository,
+pub fn create_from_target<E: Environment>(
+    repository: &Repository<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
 ) -> Result<(), Box<dyn Error>> {
@@ -16,8 +16,8 @@ pub fn create_from_target(
     }
 }
 
-pub fn get_content(
-    repository: &Repository,
+pub fn get_content<E: Environment>(
+    repository: &Repository<E>,
     dir_path: &PathBuf,
     dir: &DirectoryDescriptor,
     file: &FileDescriptor,

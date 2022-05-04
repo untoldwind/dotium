@@ -2,7 +2,7 @@ use std::{error::Error, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{model::Recipient, secret_key::SecretKey};
+use crate::{model::Recipient, repository::Environment, secret_key::SecretKey};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Configuration {
@@ -17,23 +17,17 @@ pub struct ConfigurationHolder {
 }
 
 impl ConfigurationHolder {
-    pub fn config_dir() -> Result<PathBuf, Box<dyn Error>> {
-        dirs::config_dir()
-            .map(|dir| dir.join("dotium"))
-            .ok_or_else(|| "Unable to get config dir".into())
-    }
-
-    pub fn read_config(
+    pub fn read_config<E: Environment>(
         maybe_config_file: &Option<PathBuf>,
         maybe_keys_file: &Option<PathBuf>,
     ) -> Result<ConfigurationHolder, Box<dyn Error>> {
         let config_file = match maybe_config_file {
             Some(file) => file.clone(),
-            None => Self::config_dir()?.join("config.json"),
+            None => E::config_dir()?.join("config.json"),
         };
         let keys_file = match maybe_keys_file {
             Some(file) => file.clone(),
-            None => Self::config_dir()?.join("keys.txt"),
+            None => E::config_dir()?.join("keys.txt"),
         };
 
         let configuration = if config_file.is_file() {

@@ -3,6 +3,7 @@ use std::{error::Error, path::PathBuf};
 use clap::Parser;
 use config::ConfigurationHolder;
 use console::{set_colors_enabled, Style};
+use repository::DefaultEnvironment;
 
 mod cli;
 mod config;
@@ -34,10 +35,11 @@ fn main() {
         set_colors_enabled(false);
     }
 
-    let config = match ConfigurationHolder::read_config(&opts.config, &opts.keys) {
-        Ok(config) => config,
-        Err(err) => exit_on_error(err),
-    };
+    let config =
+        match ConfigurationHolder::read_config::<DefaultEnvironment>(&opts.config, &opts.keys) {
+            Ok(config) => config,
+            Err(err) => exit_on_error(err),
+        };
 
     if let Err(err) = opts.sub_command.run(config) {
         exit_on_error(err);

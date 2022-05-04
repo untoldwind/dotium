@@ -1,4 +1,4 @@
-use std::{path::PathBuf, error::Error, fs, io::Write};
+use std::{error::Error, fs, io::Write, path::PathBuf};
 
 #[derive(Debug)]
 pub enum Changes {
@@ -31,11 +31,14 @@ impl Outcome {
         if let Some(parent) = self.target.parent() {
             fs::create_dir_all(parent)?;
         }
-        let mut file = fs::OpenOptions::new().write(true).truncate(true).create(true).open(&self.target)?;
+        let mut file = fs::OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&self.target)?;
 
         file.write_all(self.content.as_bytes())?;
 
         Ok(())
     }
 }
-

@@ -127,7 +127,7 @@ where
         Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
             let home_cloned = home.clone();
             dir.files.iter().map(move |file| {
-                let content = actions::get_content(self, secret_keys, dir_path, dir, file)?;
+                let content = actions::get_content(self, secret_keys, dir_path, file)?;
 
                 Ok(Outcome {
                     target: home_cloned.join(&file.target),

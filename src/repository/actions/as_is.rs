@@ -1,7 +1,7 @@
 use std::{error::Error, fs, path::PathBuf};
 
 use crate::{
-    model::{DirectoryDescriptor, FileDescriptor},
+    model::FileDescriptor,
     repository::{Environment, Repository},
 };
 
@@ -25,7 +25,6 @@ pub fn create_from_target<E: Environment>(
 pub fn get_content<E: Environment>(
     repository: &Repository<E>,
     dir_path: &PathBuf,
-    dir: &DirectoryDescriptor,
     file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
     let source = repository.directory.join(dir_path).join(&file.source);

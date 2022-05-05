@@ -25,7 +25,7 @@ pub struct DotiumOptions {
     no_colors: bool,
 
     #[clap(subcommand)]
-    sub_command: cli::Subcommand,
+    sub_command: cli::MainCommand,
 }
 
 fn main() {

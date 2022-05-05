@@ -1,10 +1,10 @@
-use clap::Parser;
+use clap::Args;
 
 use std::error::Error;
 
 use crate::secret_key::SecretKey;
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Args)]
 pub struct GenKeyCommand {}
 
 impl GenKeyCommand {

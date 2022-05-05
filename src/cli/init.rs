@@ -1,13 +1,13 @@
 use std::error::Error;
 
-use clap::Parser;
+use clap::Args;
 use console::Style;
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use gethostname::gethostname;
 
 use crate::config::ConfigurationHolder;
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Args)]
 pub struct InitCommand {
     #[clap(short, long, help = "Name of the host")]
     pub name: Option<String>,

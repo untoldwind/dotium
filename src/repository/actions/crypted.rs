@@ -1,15 +1,19 @@
-use std::{error::Error, fs, io::{self, Read}, path::PathBuf};
+use std::{
+    error::Error,
+    fs,
+    io::{self, Read},
+    path::PathBuf,
+};
 
 use age::{
-    armor::{ArmoredWriter, ArmoredReader, Format},
-    Recipient,
-    Encryptor,
-    Decryptor,
+    armor::{ArmoredReader, ArmoredWriter, Format},
+    Decryptor, Encryptor, Recipient,
 };
 
 use crate::{
-    model::{DirectoryDescriptor, FileDescriptor},
-    repository::{Environment, Repository}, secret_key::SecretKey,
+    model::FileDescriptor,
+    repository::{Environment, Repository},
+    secret_key::SecretKey,
 };
 
 pub fn create_from_target<E: Environment>(
@@ -51,14 +55,17 @@ pub fn get_content<E: Environment>(
     repository: &Repository<E>,
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
-    dir: &DirectoryDescriptor,
     file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
     let source = repository.directory.join(dir_path).join(&file.source);
 
-    if let Decryptor::Recipients(decryptor) = Decryptor::new(ArmoredReader::new(fs::File::open(source)?))? {
+    if let Decryptor::Recipients(decryptor) =
+        Decryptor::new(ArmoredReader::new(fs::File::open(source)?))?
+    {
         let mut content = String::new();
-        decryptor.decrypt(secret_keys.iter().map(|s| s.to_age()))?.read_to_string(&mut content)?;
+        decryptor
+            .decrypt(secret_keys.iter().map(|s| s.to_age()))?
+            .read_to_string(&mut content)?;
 
         Ok(content)
     } else {

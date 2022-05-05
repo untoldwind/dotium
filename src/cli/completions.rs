@@ -1,10 +1,10 @@
 use std::error::Error;
 
-use clap::{CommandFactory, Parser};
+use clap::{Args, CommandFactory};
 use clap_complete::{generate, Shell};
 use std::io;
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Args)]
 pub struct CompletionCommand {
     #[clap(arg_enum)]
     shell: Shell,

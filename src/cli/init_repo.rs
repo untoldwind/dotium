@@ -1,15 +1,16 @@
 use std::{error::Error, path::PathBuf};
 
-use clap::Parser;
+use clap::Args;
 use console::Style;
 use dialoguer::{theme::ColorfulTheme, Confirm};
 
 use crate::{
+    cli::common::require_self,
     config::ConfigurationHolder,
     repository::{DefaultEnvironment, Repository},
 };
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Args)]
 pub struct InitRepoCommand {
     #[clap(default_value = ".")]
     directory: PathBuf,
@@ -17,14 +18,8 @@ pub struct InitRepoCommand {
 
 impl InitRepoCommand {
     pub fn run(self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
-        let recipient =
-            match config.configuration {
-                Some(config) => config.default_recipient,
-                None => return Err(
-                    "Dotium not initialized. Use 'dotium init' or create configuration manually"
-                        .into(),
-                ),
-            };
+        let recipient = require_self(&config)?;
+
         if Repository::<DefaultEnvironment>::open(&self.directory).is_ok() {
             return Err("Already initialized".into());
         }

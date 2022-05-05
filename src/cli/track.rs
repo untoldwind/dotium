@@ -1,6 +1,9 @@
-use std::{error::Error, path::{PathBuf, Path}};
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+};
 
-use clap::Parser;
+use clap::Args;
 use console::Style;
 use dialoguer::{theme::ColorfulTheme, Confirm};
 use std::fs;
@@ -10,7 +13,7 @@ use crate::{
     repository::{DefaultEnvironment, Repository},
 };
 
-#[derive(Debug, Parser)]
+#[derive(Debug, Args)]
 pub struct TrackCommand {
     #[clap(help = "File or directory to add to repository")]
     file_or_directory: PathBuf,

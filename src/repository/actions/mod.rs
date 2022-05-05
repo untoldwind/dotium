@@ -1,6 +1,9 @@
 use std::{error::Error, path::PathBuf};
 
-use crate::{model::{DirectoryDescriptor, FileAction, FileDescriptor}, secret_key::SecretKey};
+use crate::{
+    model::{FileAction, FileDescriptor},
+    secret_key::SecretKey,
+};
 
 use super::{Environment, Repository};
 
@@ -22,11 +25,10 @@ pub fn get_content<E: Environment>(
     repository: &Repository<E>,
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
-    dir: &DirectoryDescriptor,
     file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
     match file.action {
-        FileAction::AsIs => as_is::get_content(repository, dir_path, dir, file),
-        FileAction::Crypted => crypted::get_content(repository, secret_keys, dir_path, dir, file),
+        FileAction::AsIs => as_is::get_content(repository, dir_path, file),
+        FileAction::Crypted => crypted::get_content(repository, secret_keys, dir_path, file),
     }
 }

@@ -2,7 +2,7 @@ use std::{error::Error, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Recipient {
     pub name: String,
     pub key: String,

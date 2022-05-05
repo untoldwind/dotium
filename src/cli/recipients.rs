@@ -2,6 +2,7 @@ use std::{error::Error, path::PathBuf};
 
 use clap::{Args, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Confirm};
+use prettytable::{Table, row, cell};
 
 use crate::{
     config::ConfigurationHolder,
@@ -32,14 +33,38 @@ pub struct RecipientsCommand {
 impl RecipientsCommand {
     pub fn run(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
         match &self.subcommand {
-            RecipientsSubCommand::List => self.list(config),
+            RecipientsSubCommand::List => self.list(),
             RecipientsSubCommand::Approve => self.approve(config),
             RecipientsSubCommand::AddSelf => self.add_self(config),
         }
     }
 
-    fn list(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
-        todo!()
+    fn list(&self) -> Result<(), Box<dyn Error>> {
+        let repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+
+        let mut table = Table::new();
+
+        table.add_row(row![H2 => "Recipients"]);
+        for recipient in repository.recipients() {
+            table.add_row(row![recipient.name, recipient.key]);
+        }
+
+        table.printstd();
+
+        let mut requests_table = Table::new();
+        let mut has_requests = false;
+        requests_table.add_row(row![H2 => "Recipients requests"]);
+
+        for recipient in repository.recipient_requests() {
+            has_requests = true;
+            requests_table.add_row(row![recipient.name, recipient.key]);
+        }
+
+        if has_requests {
+            requests_table.printstd();
+        }
+
+        Ok(())
     }
 
     fn approve(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {

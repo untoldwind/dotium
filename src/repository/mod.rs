@@ -132,6 +132,7 @@ where
                 Ok(Outcome {
                     target: home_cloned.join(&file.target),
                     content,
+                    permissions: None,
                 })
             })
         }))
@@ -139,6 +140,14 @@ where
 
     pub fn recipients(&self) -> impl Iterator<Item = &Recipient> {
         self.root.recipients.iter()
+    }
+
+    pub fn recipient_requests(&self) -> impl Iterator<Item = &Recipient> {
+        self.root.recipient_requests.iter()
+    }
+
+    pub fn add_recipient_request(&mut self, recipient: Recipient) {
+        self.root.recipient_requests.push(recipient);
     }
 
     pub fn store(&self) -> Result<(), Box<dyn Error>> {

@@ -1,4 +1,9 @@
-use std::{error::Error, fs, io::Write, path::PathBuf};
+use std::{
+    error::Error,
+    fs::{self, Permissions},
+    io::Write,
+    path::PathBuf,
+};
 
 #[derive(Debug)]
 pub enum Changes {
@@ -10,6 +15,7 @@ pub enum Changes {
 pub struct Outcome {
     pub target: PathBuf,
     pub content: String,
+    pub permissions: Option<Permissions>,
 }
 
 impl Outcome {
@@ -31,13 +37,19 @@ impl Outcome {
         if let Some(parent) = self.target.parent() {
             fs::create_dir_all(parent)?;
         }
-        let mut file = fs::OpenOptions::new()
-            .write(true)
-            .truncate(true)
-            .create(true)
-            .open(&self.target)?;
+        {
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .truncate(true)
+                .create(true)
+                .open(&self.target)?;
 
-        file.write_all(self.content.as_bytes())?;
+            file.write_all(self.content.as_bytes())?;
+        }
+
+        if let Some(permissions) = &self.permissions {
+            fs::set_permissions(&self.target, permissions.to_owned())?;
+        }
 
         Ok(())
     }

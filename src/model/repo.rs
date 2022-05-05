@@ -36,7 +36,7 @@ pub enum FileAction {
 
 impl ArgEnum for FileAction {
     fn value_variants<'a>() -> &'a [Self] {
-        &[FileAction::AsIs]
+        &[FileAction::AsIs, FileAction::Crypted]
     }
 
     fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {

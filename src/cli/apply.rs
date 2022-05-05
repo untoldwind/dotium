@@ -1,4 +1,4 @@
-use std::{error::Error, fs, path::PathBuf};
+use std::{error::Error, path::PathBuf};
 
 use clap::Args;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
@@ -6,7 +6,6 @@ use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use crate::{
     config::ConfigurationHolder,
     repository::{Changes, DefaultEnvironment, Outcome, Repository},
-    secret_key::SecretKey,
     utils::color_diff::ColorDiff,
 };
 

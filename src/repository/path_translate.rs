@@ -11,9 +11,13 @@ use super::{Environment, Repository};
 pub fn relative_target_file<P: AsRef<Path>, E: Environment>(
     source: P,
 ) -> Result<PathBuf, Box<dyn Error>> {
-    let home = E::home_dir()?;
+    if source.as_ref().is_relative() {
+        Ok(source.as_ref().to_path_buf())
+    } else {
+        let home = E::home_dir()?;
 
-    Ok(source.as_ref().strip_prefix(home)?.to_path_buf())
+        Ok(source.as_ref().strip_prefix(home)?.to_path_buf())
+    }
 }
 
 pub fn source_file_from_target<P: AsRef<Path>>(target: P) -> (PathBuf, String) {

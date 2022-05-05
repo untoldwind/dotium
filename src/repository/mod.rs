@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
+use crate::secret_key::SecretKey;
 
 pub use self::environment::*;
 pub use self::outcome::{Changes, Outcome};
@@ -114,10 +115,11 @@ where
         Ok(added)
     }
 
-    pub fn outcomes(
-        &self,
+    pub fn outcomes<'a>(
+        &'a self,
+        secret_keys: &'a [SecretKey],
     ) -> Result<
-        impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + '_,
+        impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + 'a,
         Box<dyn Error + 'static>,
     > {
         let home = E::home_dir()?;
@@ -125,7 +127,7 @@ where
         Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
             let home_cloned = home.clone();
             dir.files.iter().map(move |file| {
-                let content = actions::get_content(self, dir_path, dir, file)?;
+                let content = actions::get_content(self, secret_keys, dir_path, dir, file)?;
 
                 Ok(Outcome {
                     target: home_cloned.join(&file.target),
@@ -133,6 +135,10 @@ where
                 })
             })
         }))
+    }
+
+    pub fn recipients(&self) -> impl Iterator<Item = &Recipient> {
+        self.root.recipients.iter()
     }
 
     pub fn store(&self) -> Result<(), Box<dyn Error>> {

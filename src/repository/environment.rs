@@ -10,7 +10,7 @@ pub struct DefaultEnvironment {}
 
 impl Environment for DefaultEnvironment {
     fn home_dir() -> Result<PathBuf, Box<dyn Error>> {
-        Ok(dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())?)
+        dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())
     }
 
     fn config_dir() -> Result<PathBuf, Box<dyn Error>> {

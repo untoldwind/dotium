@@ -29,7 +29,7 @@ pub enum Subcommand {
 impl Subcommand {
     pub fn run(self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
         match self {
-            Subcommand::Apply(cmd) => cmd.run(),
+            Subcommand::Apply(cmd) => cmd.run(config),
             Subcommand::GenKey(cmd) => cmd.run(),
             Subcommand::Completions(cmd) => cmd.run(),
             Subcommand::Init(cmd) => cmd.run(config),

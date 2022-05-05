@@ -10,10 +10,10 @@ static RIGHT: &str = ">";
 static NL_RIGHT: &str = "\n>";
 
 lazy_static! {
-    static ref red: Style = Style::new().red();
-    static ref green: Style = Style::new().green();
-    static ref on_red: Style = Style::new().on_red().white();
-    static ref on_green: Style = Style::new().on_green().white();
+    static ref RED: Style = Style::new().red();
+    static ref GREEN: Style = Style::new().green();
+    static ref ON_RED: Style = Style::new().on_red().white();
+    static ref ON_GREEN: Style = Style::new().on_green().white();
 }
 
 pub struct ColorDiff<'a> {
@@ -29,7 +29,7 @@ impl<'a> ColorDiff<'a> {
 
 impl<'a> fmt::Display for ColorDiff<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        color_diff(f, &self.expected, &self.actual)
+        color_diff(f, self.expected, self.actual)
     }
 }
 
@@ -42,10 +42,10 @@ fn fmt_changeset(f: &mut fmt::Formatter, changeset: &[Chunk]) -> fmt::Result {
     writeln!(
         f,
         "{} {} / {} {}",
-        red.apply_to(LEFT),
-        red.apply_to("left"),
-        green.apply_to(RIGHT),
-        green.apply_to("right")
+        RED.apply_to(LEFT),
+        RED.apply_to("left"),
+        GREEN.apply_to(RIGHT),
+        GREEN.apply_to("right")
     )?;
 
     for (i, diff) in changeset.iter().enumerate() {
@@ -74,17 +74,17 @@ fn fmt_changeset(f: &mut fmt::Formatter, changeset: &[Chunk]) -> fmt::Result {
 fn fmt_add_rem(f: &mut fmt::Formatter, added: &str, removed: &str) -> fmt::Result {
     let diffs = dissimilar::diff(removed, added);
 
-    write!(f, "{}", red.apply_to(LEFT))?;
+    write!(f, "{}", RED.apply_to(LEFT))?;
     for diff in &diffs {
         match diff {
             Chunk::Equal(text) => {
                 for blob in Itertools::intersperse(text.split('\n'), NL_LEFT) {
-                    write!(f, "{}", red.apply_to(blob))?;
+                    write!(f, "{}", RED.apply_to(blob))?;
                 }
             }
             Chunk::Delete(text) => {
                 for blob in Itertools::intersperse(text.split('\n'), NL_LEFT) {
-                    write!(f, "{}", on_red.apply_to(blob))?;
+                    write!(f, "{}", ON_RED.apply_to(blob))?;
                 }
             }
             Chunk::Insert(_) => continue,
@@ -92,17 +92,17 @@ fn fmt_add_rem(f: &mut fmt::Formatter, added: &str, removed: &str) -> fmt::Resul
     }
     writeln!(f)?;
 
-    write!(f, "{}", green.apply_to(RIGHT))?;
+    write!(f, "{}", GREEN.apply_to(RIGHT))?;
     for diff in &diffs {
         match diff {
             Chunk::Equal(text) => {
                 for blob in Itertools::intersperse(text.split('\n'), NL_RIGHT) {
-                    write!(f, "{}", green.apply_to(blob))?;
+                    write!(f, "{}", GREEN.apply_to(blob))?;
                 }
             }
             Chunk::Insert(text) => {
                 for blob in Itertools::intersperse(text.split('\n'), NL_RIGHT) {
-                    write!(f, "{}", on_green.apply_to(blob))?;
+                    write!(f, "{}", ON_GREEN.apply_to(blob))?;
                 }
             }
             Chunk::Delete(_) => continue,
@@ -115,14 +115,14 @@ fn fmt_add_rem(f: &mut fmt::Formatter, added: &str, removed: &str) -> fmt::Resul
 
 fn fmt_add(f: &mut fmt::Formatter, text: &str) -> fmt::Result {
     for line in text.split('\n') {
-        writeln!(f, "{}{}", green.apply_to(RIGHT), green.apply_to(line))?;
+        writeln!(f, "{}{}", GREEN.apply_to(RIGHT), GREEN.apply_to(line))?;
     }
     Ok(())
 }
 
 fn fmt_rem(f: &mut fmt::Formatter, text: &str) -> fmt::Result {
     for line in text.split('\n') {
-        writeln!(f, "{}{}", red.apply_to(LEFT), red.apply_to(line))?;
+        writeln!(f, "{}{}", RED.apply_to(LEFT), RED.apply_to(line))?;
     }
     Ok(())
 }

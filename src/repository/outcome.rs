@@ -17,7 +17,7 @@ impl Outcome {
         if self.target.exists() {
             let current_content = fs::read_to_string(&self.target)?;
 
-            if &current_content == &self.content {
+            if current_content == self.content {
                 Ok(Changes::None)
             } else {
                 Ok(Changes::Diff(current_content))

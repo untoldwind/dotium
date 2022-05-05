@@ -1,10 +1,12 @@
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, fs, path::PathBuf};
 
 use clap::Parser;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 
 use crate::{
+    config::ConfigurationHolder,
     repository::{Changes, DefaultEnvironment, Outcome, Repository},
+    secret_key::SecretKey,
     utils::color_diff::ColorDiff,
 };
 
@@ -21,10 +23,11 @@ pub struct ApplyCommand {
 }
 
 impl ApplyCommand {
-    pub fn run(&self) -> Result<(), Box<dyn Error>> {
+    pub fn run(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
         let repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+        let secret_keys = SecretKey::read_from(fs::File::open(config.keys_file)?)?;
 
-        for try_outcome in repository.outcomes()? {
+        for try_outcome in repository.outcomes(&secret_keys)? {
             let outcome = try_outcome?;
 
             if !self

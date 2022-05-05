@@ -1,4 +1,4 @@
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, path::{PathBuf, Path}};
 
 use clap::Parser;
 use console::Style;
@@ -77,7 +77,7 @@ impl TrackCommand {
     }
 }
 
-fn collect_targets(targets: &mut Vec<PathBuf>, directory: &PathBuf) -> Result<(), Box<dyn Error>> {
+fn collect_targets(targets: &mut Vec<PathBuf>, directory: &Path) -> Result<(), Box<dyn Error>> {
     for entry in directory.read_dir()? {
         let file = entry?.path();
 

@@ -31,6 +31,7 @@ pub struct FileDescriptor {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum FileAction {
     AsIs,
+    Crypted,
 }
 
 impl ArgEnum for FileAction {
@@ -41,6 +42,7 @@ impl ArgEnum for FileAction {
     fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
         Some(match self {
             FileAction::AsIs => PossibleValue::new("as-is"),
+            FileAction::Crypted => PossibleValue::new("crypted"),
         })
     }
 }

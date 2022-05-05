@@ -1,6 +1,6 @@
 use std::{error::Error, path::PathBuf};
 
-use crate::{model::FileAction, secret_key::SecretKey};
+use crate::{model::FileAction, repository::outcome::OutcomeError, secret_key::SecretKey};
 
 use super::{Environment, Outcome, Repository};
 
@@ -40,7 +40,7 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
 
     let outcomes = repository
         .outcomes(&[secret_key])?
-        .collect::<Result<Vec<Outcome>, Box<dyn Error>>>()?;
+        .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
 
@@ -74,7 +74,7 @@ fn track_secret_files() -> Result<(), Box<dyn Error>> {
 
     let outcomes = repository
         .outcomes(&[secret_key])?
-        .collect::<Result<Vec<Outcome>, Box<dyn Error>>>()?;
+        .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
 

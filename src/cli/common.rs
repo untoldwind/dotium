@@ -6,9 +6,7 @@ pub fn require_self(config: &ConfigurationHolder) -> Result<Recipient, Box<dyn E
     match &config.configuration {
         Some(config) => Ok(config.default_recipient.clone()),
         None => {
-            return Err(
-                "Dotium not initialized. Use 'dotium init' or create configuration manually".into(),
-            )
+            Err("Dotium not initialized. Use 'dotium init' or create configuration manually".into())
         }
     }
 }
@@ -22,10 +20,8 @@ pub fn require_secret_keys(config: &ConfigurationHolder) -> Result<Vec<SecretKey
     let secret_keys = SecretKey::read_from(fs::File::open(&config.keys_file)?)?;
 
     if secret_keys.is_empty() {
-        return Err(
-            "Keys file is empty. Use 'dotium init' or create configuration manually".into(),
-        );
+        Err("Keys file is empty. Use 'dotium init' or create configuration manually".into())
+    } else {
+        Ok(secret_keys)
     }
-
-    Ok(secret_keys)
 }

@@ -1,5 +1,6 @@
 use std::{
     error::Error,
+    fmt,
     fs::{self, Permissions},
     io::Write,
     path::PathBuf,
@@ -52,5 +53,23 @@ impl Outcome {
         }
 
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct OutcomeError {
+    pub target: PathBuf,
+    pub error: Box<dyn Error + 'static>,
+}
+
+impl Error for OutcomeError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        Some(self.error.as_ref())
+    }
+}
+
+impl fmt::Display for OutcomeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.error)
     }
 }

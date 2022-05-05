@@ -5,6 +5,7 @@ use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
 use crate::secret_key::SecretKey;
 
 pub use self::environment::*;
+use self::outcome::OutcomeError;
 pub use self::outcome::{Changes, Outcome};
 pub use self::path_translate::FileRef;
 
@@ -118,16 +119,20 @@ where
     pub fn outcomes<'a>(
         &'a self,
         secret_keys: &'a [SecretKey],
-    ) -> Result<
-        impl Iterator<Item = Result<Outcome, Box<dyn Error + 'static>>> + 'a,
-        Box<dyn Error + 'static>,
-    > {
+    ) -> Result<impl Iterator<Item = Result<Outcome, OutcomeError>> + 'a, Box<dyn Error + 'static>>
+    {
         let home = E::home_dir()?;
 
         Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
             let home_cloned = home.clone();
             dir.files.iter().map(move |file| {
-                let content = actions::get_content(self, secret_keys, dir_path, file)?;
+                let content =
+                    actions::get_content(self, secret_keys, dir_path, file).map_err(|error| {
+                        OutcomeError {
+                            target: home_cloned.join(&file.target),
+                            error,
+                        }
+                    })?;
 
                 Ok(Outcome {
                     target: home_cloned.join(&file.target),

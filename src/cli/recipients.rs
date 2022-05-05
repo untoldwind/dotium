@@ -2,7 +2,7 @@ use std::{error::Error, path::PathBuf};
 
 use clap::{Args, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Confirm};
-use prettytable::{Table, row, cell};
+use prettytable::{cell, row, Table};
 
 use crate::{
     config::ConfigurationHolder,

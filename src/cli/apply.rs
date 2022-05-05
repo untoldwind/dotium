@@ -1,6 +1,7 @@
 use std::{error::Error, path::PathBuf};
 
 use clap::Args;
+use console::Style;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 
 use crate::{
@@ -29,7 +30,23 @@ impl ApplyCommand {
         let secret_keys = require_secret_keys(&config)?;
 
         for try_outcome in repository.outcomes(&secret_keys)? {
-            let outcome = try_outcome?;
+            let outcome = match try_outcome {
+                Ok(outcome) => outcome,
+                Err(outcome_error) => {
+                    let red = Style::new().red();
+                    let bold = Style::new().bold();
+
+                    println!();
+                    println!(
+                        "{}: Skipping {} due to {}",
+                        red.apply_to("Error"),
+                        bold.apply_to(outcome_error.target.to_string_lossy()),
+                        outcome_error.error
+                    );
+                    println!();
+                    continue;
+                }
+            };
 
             if !self
                 .only

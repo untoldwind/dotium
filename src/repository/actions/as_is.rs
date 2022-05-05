@@ -33,3 +33,16 @@ pub fn get_content<E: Environment>(
 
     Ok(content)
 }
+
+pub fn set_content<E: Environment>(
+    repository: &Repository<E>,
+    dir_path: &PathBuf,
+    file: &FileDescriptor,
+    content: String,
+) -> Result<(), Box<dyn Error>> {
+    let source = repository.directory.join(dir_path).join(&file.source);
+
+    fs::write(source, content)?;
+
+    Ok(())
+}

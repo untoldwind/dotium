@@ -1,7 +1,7 @@
 use std::{
     error::Error,
     fs,
-    io::{self, Read},
+    io::{self, Read, Write},
     path::PathBuf,
 };
 
@@ -71,4 +71,33 @@ pub fn get_content<E: Environment>(
     } else {
         Err("Invalid encryption format: No recipients".into())
     }
+}
+
+pub fn set_content<E: Environment>(
+    repository: &Repository<E>,
+    dir_path: &PathBuf,
+    file: &FileDescriptor,
+    content: String,
+) -> Result<(), Box<dyn Error>> {
+    let source = repository.directory.join(dir_path).join(&file.source);
+    let encryptor = Encryptor::with_recipients(
+        repository
+            .recipients()
+            .map(|r| r.to_age())
+            .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?,
+    );
+    let output_file = fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(source)?;
+
+    let mut output =
+        encryptor.wrap_output(ArmoredWriter::wrap_output(output_file, Format::AsciiArmor)?)?;
+
+    output.write_all(content.as_ref())?;
+
+    output.finish()?.finish()?;
+
+    Ok(())
 }

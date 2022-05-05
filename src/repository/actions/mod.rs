@@ -32,3 +32,15 @@ pub fn get_content<E: Environment>(
         FileAction::Crypted => crypted::get_content(repository, secret_keys, dir_path, file),
     }
 }
+
+pub fn set_content<E: Environment>(
+    repository: &Repository<E>,
+    dir_path: &PathBuf,
+    file: &FileDescriptor,
+    content: String,
+) -> Result<(), Box<dyn Error>> {
+    match file.action {
+        FileAction::AsIs => as_is::set_content(repository, dir_path, file, content),
+        FileAction::Crypted => crypted::set_content(repository, dir_path, file, content),
+    }
+}

@@ -2,7 +2,6 @@ use std::{
     error::Error,
     fmt,
     fs::{self, Permissions},
-    io::Write,
     path::PathBuf,
 };
 
@@ -38,15 +37,8 @@ impl Outcome {
         if let Some(parent) = self.target.parent() {
             fs::create_dir_all(parent)?;
         }
-        {
-            let mut file = fs::OpenOptions::new()
-                .write(true)
-                .truncate(true)
-                .create(true)
-                .open(&self.target)?;
 
-            file.write_all(self.content.as_bytes())?;
-        }
+        fs::write(&self.target, &self.content)?;
 
         if let Some(permissions) = &self.permissions {
             fs::set_permissions(&self.target, permissions.to_owned())?;

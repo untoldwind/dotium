@@ -44,7 +44,7 @@ impl TrackCommand {
         let bold = Style::new().bold();
         println!(
             "Add files to repository {}",
-            bold.apply_to(&repository.directory.to_string_lossy())
+            bold.apply_to(&repository.directory().to_string_lossy())
         );
         for file_ref in &added {
             println!(

@@ -22,7 +22,7 @@ impl EditCommand {
         let repository = Repository::<DefaultEnvironment>::open(&repository_path)?;
         let secret_keys = require_secret_keys(&config)?;
 
-        let mut files = repository.files().collect::<Vec<FileRef>>();
+        let mut files = repository.files().collect::<Vec<FileRef<_>>>();
 
         files.sort();
 
@@ -32,10 +32,10 @@ impl EditCommand {
             .interact_opt()?
         {
             let file = &files[index];
-            let content = repository.get_content(&secret_keys, file)?;
+            let content = file.get_content(&secret_keys)?;
 
             if let Some(new_content) = Editor::new().trim_newlines(false).edit(&content)? {
-                repository.set_content(file, &new_content)?;
+                file.set_content(&new_content)?;
             }
         }
 

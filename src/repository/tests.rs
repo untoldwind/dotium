@@ -38,8 +38,10 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
     )?;
     repository.store()?;
 
+    let secret_keys = &[secret_key];
     let outcomes = repository
-        .outcomes(&[secret_key])?
+        .files()
+        .map(|f| f.outcome(secret_keys))
         .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
@@ -72,8 +74,10 @@ fn track_secret_files() -> Result<(), Box<dyn Error>> {
     )?;
     repository.store()?;
 
+    let secret_keys = &[secret_key];
     let outcomes = repository
-        .outcomes(&[secret_key])?
+        .files()
+        .map(|f| f.outcome(secret_keys))
         .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);

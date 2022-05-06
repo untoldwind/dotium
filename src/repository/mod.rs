@@ -1,23 +1,23 @@
 use std::marker::PhantomData;
+use std::rc::Rc;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
-use crate::secret_key::SecretKey;
 
 pub use self::environment::*;
-use self::outcome::OutcomeError;
+pub use self::file_ref::FileRef;
+use self::file_ref::RepositoryInfo;
 pub use self::outcome::{Changes, Outcome};
-pub use self::path_translate::FileRef;
 
 mod actions;
 mod environment;
+mod file_ref;
 mod outcome;
-mod path_translate;
 #[cfg(test)]
 mod tests;
 
 pub struct Repository<E> {
-    pub directory: PathBuf,
+    info: Rc<RepositoryInfo<E>>,
     root_file: PathBuf,
     root: RootDescriptor,
     dirs: HashMap<PathBuf, DirectoryDescriptor>,
@@ -53,7 +53,11 @@ where
         }
 
         Ok(Repository {
-            directory,
+            info: Rc::new(RepositoryInfo {
+                directory,
+                recipients: root.recipients.clone(),
+                phantom: PhantomData,
+            }),
             root_file,
             root,
             dirs,
@@ -71,7 +75,11 @@ where
         };
 
         let repo = Repository {
-            directory,
+            info: Rc::new(RepositoryInfo {
+                directory,
+                recipients: root.recipients.clone(),
+                phantom: PhantomData,
+            }),
             root_file,
             root,
             dirs: HashMap::new(),
@@ -86,16 +94,16 @@ where
         &mut self,
         action: FileAction,
         targets: I,
-    ) -> Result<Vec<FileRef>, Box<dyn Error>> {
+    ) -> Result<Vec<FileRef<E>>, Box<dyn Error>> {
         let mut added = Vec::new();
         for target in targets {
-            let file_ref = FileRef::new(self, target, action)?;
+            let file_ref = FileRef::new(self.info.clone(), target, action)?;
 
             if file_ref.absolute_source().exists() {
                 return Err(format!("{} already in repository", file_ref).into());
             }
 
-            actions::create_from_target(self, &file_ref.dir_path, &file_ref.file)?;
+            actions::create_from_target(&self.info, &file_ref.dir_path, &file_ref.file)?;
 
             if let Some(dir) = self.dirs.get_mut(&file_ref.dir_path) {
                 dir.files.push(file_ref.file.clone());
@@ -116,31 +124,8 @@ where
         Ok(added)
     }
 
-    pub fn outcomes<'a>(
-        &'a self,
-        secret_keys: &'a [SecretKey],
-    ) -> Result<impl Iterator<Item = Result<Outcome, OutcomeError>> + 'a, Box<dyn Error + 'static>>
-    {
-        let home = E::home_dir()?;
-
-        Ok(self.dirs.iter().flat_map(move |(dir_path, dir)| {
-            let home_cloned = home.clone();
-            dir.files.iter().map(move |file| {
-                let content =
-                    actions::get_content(self, secret_keys, dir_path, file).map_err(|error| {
-                        OutcomeError {
-                            target: home_cloned.join(&file.target),
-                            error,
-                        }
-                    })?;
-
-                Ok(Outcome {
-                    target: home_cloned.join(&file.target),
-                    content,
-                    permissions: None,
-                })
-            })
-        }))
+    pub fn directory(&self) -> PathBuf {
+        self.info.directory.to_path_buf()
     }
 
     pub fn recipients(&self) -> impl Iterator<Item = &Recipient> {
@@ -151,26 +136,14 @@ where
         self.root.recipient_requests.iter()
     }
 
-    pub fn files(&self) -> impl Iterator<Item = FileRef> + '_ {
+    pub fn files(&self) -> impl Iterator<Item = FileRef<E>> + '_ {
         self.dirs.iter().flat_map(move |(dir_path, dir)| {
             dir.files.iter().map(move |file| FileRef {
-                repository_directory: self.directory.clone(),
+                repository: self.info.clone(),
                 dir_path: dir_path.clone(),
                 file: file.clone(),
             })
         })
-    }
-
-    pub fn get_content(
-        &self,
-        secret_keys: &[SecretKey],
-        file_ref: &FileRef,
-    ) -> Result<String, Box<dyn Error>> {
-        actions::get_content(self, secret_keys, &file_ref.dir_path, &file_ref.file)
-    }
-
-    pub fn set_content(&self, file_ref: &FileRef, content: &str) -> Result<(), Box<dyn Error>> {
-        actions::set_content(self, &file_ref.dir_path, &file_ref.file, content)
     }
 
     pub fn add_recipient_request(&mut self, recipient: Recipient) {
@@ -186,7 +159,7 @@ where
         serde_json::to_writer_pretty(root_file, &self.root)?;
 
         for (dir_path, dir) in &self.dirs {
-            let dir_path = self.directory.join(dir_path);
+            let dir_path = self.info.directory.join(dir_path);
             fs::create_dir_all(&dir_path)?;
 
             let dir_file = fs::OpenOptions::new()

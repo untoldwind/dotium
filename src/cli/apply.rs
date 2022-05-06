@@ -31,8 +31,8 @@ impl ApplyCommand {
         let repository = Repository::<DefaultEnvironment>::open(repository_path)?;
         let secret_keys = require_secret_keys(&config)?;
 
-        for try_outcome in repository.outcomes(&secret_keys)? {
-            let outcome = match try_outcome {
+        for file in repository.files() {
+            let outcome = match file.outcome(&secret_keys) {
                 Ok(outcome) => outcome,
                 Err(outcome_error) => {
                     let red = Style::new().red();

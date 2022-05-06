@@ -97,7 +97,7 @@ impl RecipientsCommand {
         if let Some(true) = Confirm::with_theme(&ColorfulTheme::default())
             .with_prompt(format!(
                 "Add self to repository {}",
-                repository.directory.to_string_lossy()
+                repository.directory().to_string_lossy()
             ))
             .default(true)
             .interact_opt()?

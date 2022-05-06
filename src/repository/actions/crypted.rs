@@ -12,21 +12,21 @@ use age::{
 
 use crate::{
     model::FileDescriptor,
-    repository::{Environment, Repository},
+    repository::{file_ref::RepositoryInfo, Environment},
     secret_key::SecretKey,
 };
 
 pub fn create_from_target<E: Environment>(
-    repository: &Repository<E>,
+    info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
 ) -> Result<(), Box<dyn Error>> {
     let home = E::home_dir()?;
     let target = home.join(&file.target);
-    let source = repository.directory.join(dir_path).join(&file.source);
+    let source = info.directory.join(dir_path).join(&file.source);
     let encryptor = Encryptor::with_recipients(
-        repository
-            .recipients()
+        info.recipients
+            .iter()
             .map(|r| r.to_age())
             .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?,
     );
@@ -52,12 +52,12 @@ pub fn create_from_target<E: Environment>(
 }
 
 pub fn get_content<E: Environment>(
-    repository: &Repository<E>,
+    info: &RepositoryInfo<E>,
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
     file: &FileDescriptor,
 ) -> Result<String, Box<dyn Error>> {
-    let source = repository.directory.join(dir_path).join(&file.source);
+    let source = info.directory.join(dir_path).join(&file.source);
 
     if let Decryptor::Recipients(decryptor) =
         Decryptor::new(ArmoredReader::new(fs::File::open(source)?))?
@@ -74,15 +74,15 @@ pub fn get_content<E: Environment>(
 }
 
 pub fn set_content<E: Environment>(
-    repository: &Repository<E>,
+    info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
     content: &str,
 ) -> Result<(), Box<dyn Error>> {
-    let source = repository.directory.join(dir_path).join(&file.source);
+    let source = info.directory.join(dir_path).join(&file.source);
     let encryptor = Encryptor::with_recipients(
-        repository
-            .recipients()
+        info.recipients
+            .iter()
             .map(|r| r.to_age())
             .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?,
     );

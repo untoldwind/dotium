@@ -46,6 +46,7 @@ pub fn source_file_from_target<P: AsRef<Path>>(target: P) -> (PathBuf, String) {
     )
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileRef {
     pub repository_directory: PathBuf,
     pub dir_path: PathBuf,

@@ -151,6 +151,28 @@ where
         self.root.recipient_requests.iter()
     }
 
+    pub fn files(&self) -> impl Iterator<Item = FileRef> + '_ {
+        self.dirs.iter().flat_map(move |(dir_path, dir)| {
+            dir.files.iter().map(move |file| FileRef {
+                repository_directory: self.directory.clone(),
+                dir_path: dir_path.clone(),
+                file: file.clone(),
+            })
+        })
+    }
+
+    pub fn get_content(
+        &self,
+        secret_keys: &[SecretKey],
+        file_ref: &FileRef,
+    ) -> Result<String, Box<dyn Error>> {
+        actions::get_content(self, secret_keys, &file_ref.dir_path, &file_ref.file)
+    }
+
+    pub fn set_content(&self, file_ref: &FileRef, content: &str) -> Result<(), Box<dyn Error>> {
+        actions::set_content(self, &file_ref.dir_path, &file_ref.file, content)
+    }
+
     pub fn add_recipient_request(&mut self, recipient: Recipient) {
         self.root.recipient_requests.push(recipient);
     }

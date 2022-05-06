@@ -17,15 +17,13 @@ use crate::{
 pub struct TrackCommand {
     #[clap(help = "File or directory to add to repository")]
     file_or_directory: PathBuf,
-    #[clap(short, long, default_value = ".", help = "Repository to use")]
-    repository: PathBuf,
     #[clap(short, long, arg_enum, default_value = "as-is")]
     action: FileAction,
 }
 
 impl TrackCommand {
-    pub fn run(&self) -> Result<(), Box<dyn Error>> {
-        let mut repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+    pub fn run(&self, repository_path: PathBuf) -> Result<(), Box<dyn Error>> {
+        let mut repository = Repository::<DefaultEnvironment>::open(&repository_path)?;
 
         let mut targets = Vec::new();
 

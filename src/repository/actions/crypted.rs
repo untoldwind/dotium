@@ -77,7 +77,7 @@ pub fn set_content<E: Environment>(
     repository: &Repository<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: String,
+    content: &str,
 ) -> Result<(), Box<dyn Error>> {
     let source = repository.directory.join(dir_path).join(&file.source);
     let encryptor = Encryptor::with_recipients(
@@ -95,7 +95,7 @@ pub fn set_content<E: Environment>(
     let mut output =
         encryptor.wrap_output(ArmoredWriter::wrap_output(output_file, Format::AsciiArmor)?)?;
 
-    output.write_all(content.as_ref())?;
+    output.write_all(content.as_bytes())?;
 
     output.finish()?.finish()?;
 

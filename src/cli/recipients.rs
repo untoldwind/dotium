@@ -23,24 +23,25 @@ pub enum RecipientsSubCommand {
 
 #[derive(Debug, Args)]
 pub struct RecipientsCommand {
-    #[clap(short, long, default_value = ".", help = "Repository to use")]
-    repository: PathBuf,
-
     #[clap(subcommand)]
     subcommand: RecipientsSubCommand,
 }
 
 impl RecipientsCommand {
-    pub fn run(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    pub fn run(
+        &self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
         match &self.subcommand {
-            RecipientsSubCommand::List => self.list(),
-            RecipientsSubCommand::Approve => self.approve(config),
-            RecipientsSubCommand::AddSelf => self.add_self(config),
+            RecipientsSubCommand::List => self.list(repository_path),
+            RecipientsSubCommand::Approve => self.approve(config, repository_path),
+            RecipientsSubCommand::AddSelf => self.add_self(config, repository_path),
         }
     }
 
-    fn list(&self) -> Result<(), Box<dyn Error>> {
-        let repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+    fn list(&self, repository_path: PathBuf) -> Result<(), Box<dyn Error>> {
+        let repository = Repository::<DefaultEnvironment>::open(&repository_path)?;
 
         let mut table = Table::new();
 
@@ -67,13 +68,21 @@ impl RecipientsCommand {
         Ok(())
     }
 
-    fn approve(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    fn approve(
+        &self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 
-    fn add_self(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    fn add_self(
+        &self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
         let recipient = require_self(&config)?;
-        let mut repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+        let mut repository = Repository::<DefaultEnvironment>::open(&repository_path)?;
 
         if repository.recipients().any(|r| r.key == recipient.key) {
             return Err("Repository already has a recipient with that key".into());

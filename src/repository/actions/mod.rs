@@ -37,7 +37,7 @@ pub fn set_content<E: Environment>(
     repository: &Repository<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: String,
+    content: &str,
 ) -> Result<(), Box<dyn Error>> {
     match file.action {
         FileAction::AsIs => as_is::set_content(repository, dir_path, file, content),

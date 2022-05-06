@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 
 use clap::Subcommand;
 
@@ -7,6 +7,7 @@ use crate::config::ConfigurationHolder;
 mod apply;
 mod common;
 mod completions;
+mod edit;
 mod gen_key;
 mod init;
 mod init_repo;
@@ -19,6 +20,8 @@ pub enum MainCommand {
     Apply(apply::ApplyCommand),
     #[clap(about = "Generate shell completions")]
     Completions(completions::CompletionCommand),
+    #[clap(about = "Edit a file in the repository")]
+    Edit(edit::EditCommand),
     #[clap(about = "Generate new age-compatible public/private key pair")]
     GenKey(gen_key::GenKeyCommand),
     #[clap(about = "Initialize dotium configuration on new machine")]
@@ -32,15 +35,20 @@ pub enum MainCommand {
 }
 
 impl MainCommand {
-    pub fn run(self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    pub fn run(
+        self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
         match self {
-            MainCommand::Apply(cmd) => cmd.run(config),
+            MainCommand::Apply(cmd) => cmd.run(config, repository_path),
             MainCommand::GenKey(cmd) => cmd.run(),
             MainCommand::Completions(cmd) => cmd.run(),
+            MainCommand::Edit(cmd) => cmd.run(config, repository_path),
             MainCommand::Init(cmd) => cmd.run(config),
-            MainCommand::InitRepo(cmd) => cmd.run(config),
-            MainCommand::Recipients(cmd) => cmd.run(config),
-            MainCommand::Track(cmd) => cmd.run(),
+            MainCommand::InitRepo(cmd) => cmd.run(config, repository_path),
+            MainCommand::Recipients(cmd) => cmd.run(config, repository_path),
+            MainCommand::Track(cmd) => cmd.run(repository_path),
         }
     }
 }

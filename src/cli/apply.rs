@@ -14,8 +14,6 @@ use super::common::require_secret_keys;
 
 #[derive(Debug, Args)]
 pub struct ApplyCommand {
-    #[clap(short, long, default_value = ".", help = "Repository to use")]
-    repository: PathBuf,
     #[clap(
         short,
         long,
@@ -25,8 +23,12 @@ pub struct ApplyCommand {
 }
 
 impl ApplyCommand {
-    pub fn run(&self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
-        let repository = Repository::<DefaultEnvironment>::open(&self.repository)?;
+    pub fn run(
+        &self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
+        let repository = Repository::<DefaultEnvironment>::open(repository_path)?;
         let secret_keys = require_secret_keys(&config)?;
 
         for try_outcome in repository.outcomes(&secret_keys)? {
@@ -38,7 +40,7 @@ impl ApplyCommand {
 
                     println!();
                     println!(
-                        "{}: Skipping {} due to {}",
+                        "{}: Skipping {} due to '{}'",
                         red.apply_to("Error"),
                         bold.apply_to(outcome_error.target.to_string_lossy()),
                         outcome_error.error

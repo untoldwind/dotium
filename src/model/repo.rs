@@ -21,14 +21,14 @@ pub struct DirectoryDescriptor {
     pub files: Vec<FileDescriptor>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct FileDescriptor {
     pub source: String,
     pub target: PathBuf,
     pub action: FileAction,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum FileAction {
     AsIs,
     Crypted,

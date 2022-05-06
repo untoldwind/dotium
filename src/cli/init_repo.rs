@@ -11,16 +11,17 @@ use crate::{
 };
 
 #[derive(Debug, Args)]
-pub struct InitRepoCommand {
-    #[clap(default_value = ".")]
-    directory: PathBuf,
-}
+pub struct InitRepoCommand {}
 
 impl InitRepoCommand {
-    pub fn run(self, config: ConfigurationHolder) -> Result<(), Box<dyn Error>> {
+    pub fn run(
+        self,
+        config: ConfigurationHolder,
+        repository_path: PathBuf,
+    ) -> Result<(), Box<dyn Error>> {
         let recipient = require_self(&config)?;
 
-        if Repository::<DefaultEnvironment>::open(&self.directory).is_ok() {
+        if Repository::<DefaultEnvironment>::open(&repository_path).is_ok() {
             return Err("Already initialized".into());
         }
 
@@ -28,7 +29,7 @@ impl InitRepoCommand {
         println!("Initialize repository");
         println!(
             "  Directory: {}",
-            bold.apply_to(self.directory.to_string_lossy())
+            bold.apply_to(repository_path.to_string_lossy())
         );
         println!("  Reciepient:      {}", bold.apply_to(&recipient.name));
 
@@ -39,7 +40,7 @@ impl InitRepoCommand {
             .default(true)
             .interact_opt()?
         {
-            Repository::<DefaultEnvironment>::init(self.directory, recipient)?;
+            Repository::<DefaultEnvironment>::init(repository_path, recipient)?;
         }
 
         Ok(())

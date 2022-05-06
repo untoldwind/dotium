@@ -18,6 +18,9 @@ pub struct DotiumOptions {
     #[clap(short, long, help = "Config file to use")]
     config: Option<PathBuf>,
 
+    #[clap(short, long, default_value = ".", help = "Repository to use")]
+    repository: PathBuf,
+
     #[clap(short, long, help = "Secret age keys file to use")]
     keys: Option<PathBuf>,
 
@@ -41,7 +44,7 @@ fn main() {
             Err(err) => exit_on_error(err),
         };
 
-    if let Err(err) = opts.sub_command.run(config) {
+    if let Err(err) = opts.sub_command.run(config, opts.repository) {
         exit_on_error(err);
     }
 }

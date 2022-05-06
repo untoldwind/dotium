@@ -38,7 +38,7 @@ pub fn set_content<E: Environment>(
     repository: &Repository<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: String,
+    content: &str,
 ) -> Result<(), Box<dyn Error>> {
     let source = repository.directory.join(dir_path).join(&file.source);
 

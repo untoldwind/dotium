@@ -13,8 +13,6 @@ impl GenKeyCommand {
 
         let sk = SecretKey::generate();
 
-        sk.write_to(&mut output)?;
-
-        Ok(())
+        sk.write_to(&mut output)
     }
 }

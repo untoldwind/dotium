@@ -9,7 +9,7 @@ use crate::{
     repository::{DefaultEnvironment, Repository},
 };
 
-use super::common::require_self;
+use super::common::{require_secret_keys, require_self};
 
 #[derive(Debug, Subcommand)]
 pub enum RecipientsSubCommand {
@@ -73,7 +73,24 @@ impl RecipientsCommand {
         config: ConfigurationHolder,
         repository_path: PathBuf,
     ) -> Result<(), Box<dyn Error>> {
-        todo!()
+        let mut repository = Repository::<DefaultEnvironment>::open(&repository_path)?;
+        let secret_keys = require_secret_keys(&config)?;
+
+        let mut approved = vec![];
+
+        for recipient in repository.recipient_requests() {
+            match Confirm::with_theme(&ColorfulTheme::default())
+                .with_prompt(format!("Approve {}", recipient))
+                .default(false)
+                .interact_opt()?
+            {
+                Some(true) => approved.push(recipient.clone()),
+                Some(false) => {}
+                None => return Err("Aborted by user".into()),
+            }
+        }
+
+        repository.approve_recipients(&approved, &secret_keys)
     }
 
     fn add_self(

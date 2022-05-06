@@ -1,4 +1,4 @@
-use std::{error::Error, str::FromStr};
+use std::{error::Error, fmt, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
@@ -14,5 +14,11 @@ impl Recipient {
             Ok(recipient) => Ok(Box::new(recipient)),
             Err(err) => Err(err.into()),
         }
+    }
+}
+
+impl fmt::Display for Recipient {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} ({})", self.name, self.key)
     }
 }

@@ -3,6 +3,7 @@ use std::rc::Rc;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
+use crate::secret_key::SecretKey;
 
 pub use self::environment::*;
 pub use self::file_ref::FileRef;
@@ -150,10 +151,41 @@ where
         self.root.recipient_requests.push(recipient);
     }
 
+    pub fn approve_recipients(
+        &mut self,
+        approved: &[Recipient],
+        secret_keys: &[SecretKey],
+    ) -> Result<(), Box<dyn Error>> {
+        let mut remaining_requests = vec![];
+
+        for recipient_request in self.root.recipient_requests.drain(..) {
+            if approved.iter().any(|r| r.key == recipient_request.key) {
+                self.root.recipients.push(recipient_request)
+            } else {
+                remaining_requests.push(recipient_request)
+            }
+        }
+        self.root.recipient_requests = remaining_requests;
+        self.info = Rc::new(RepositoryInfo {
+            directory: self.info.directory.clone(),
+            recipients: self.root.recipients.clone(),
+            phantom: PhantomData,
+        });
+
+        for file in self.files() {
+            let content = file.get_content(secret_keys)?;
+
+            file.set_content(&content)?;
+        }
+
+        self.store()
+    }
+
     pub fn store(&self) -> Result<(), Box<dyn Error>> {
         let root_file = fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(&self.root_file)?;
 
         serde_json::to_writer_pretty(root_file, &self.root)?;
@@ -165,6 +197,7 @@ where
             let dir_file = fs::OpenOptions::new()
                 .write(true)
                 .create(true)
+                .truncate(true)
                 .open(dir_path.join("dotium_dir.json"))?;
 
             serde_json::to_writer_pretty(dir_file, dir)?;

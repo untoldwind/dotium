@@ -1,30 +1,39 @@
-use std::{
-    error::Error,
-    fmt,
-    fs::{self, Permissions},
-    path::PathBuf,
-};
+use std::{error::Error, fmt, fs, marker::PhantomData, path::PathBuf};
+
+use super::Environment;
 
 #[derive(Debug)]
 pub enum Changes {
     NewFile,
     Diff(String),
+    ChangePermission(String),
     None,
 }
 #[derive(Debug)]
-pub struct Outcome {
+pub struct Outcome<E> {
     pub target: PathBuf,
     pub content: String,
-    pub permissions: Option<Permissions>,
+    pub permission: String,
+    pub phantom: PhantomData<E>,
 }
 
-impl Outcome {
+impl<E> Outcome<E>
+where
+    E: Environment,
+{
     pub fn changes(&self) -> Result<Changes, Box<dyn Error>> {
         if self.target.exists() {
             let current_content = fs::read_to_string(&self.target)?;
 
             if current_content == self.content {
-                Ok(Changes::None)
+                let current_permission =
+                    E::permission_to_string(fs::metadata(&self.target)?.permissions());
+
+                if self.permission != current_permission {
+                    Ok(Changes::ChangePermission(current_permission))
+                } else {
+                    Ok(Changes::None)
+                }
             } else {
                 Ok(Changes::Diff(current_content))
             }
@@ -40,8 +49,8 @@ impl Outcome {
 
         fs::write(&self.target, &self.content)?;
 
-        if let Some(permissions) = &self.permissions {
-            fs::set_permissions(&self.target, permissions.to_owned())?;
+        if let Some(permissions) = E::permission_from_string(&self.permission) {
+            fs::set_permissions(&self.target, permissions)?;
         }
 
         Ok(())

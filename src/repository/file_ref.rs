@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    fmt,
+    fmt, fs,
     marker::PhantomData,
     path::{Path, PathBuf},
     rc::Rc,
@@ -39,6 +39,8 @@ where
         let target = relative_target_file::<_, E>(target_file)?;
         let (dir_path, source) = source_file_from_target(&target);
 
+        let permissions = fs::metadata(E::home_dir()?.join(&target))?.permissions();
+
         Ok(FileRef {
             repository,
             dir_path,
@@ -46,6 +48,7 @@ where
                 source,
                 target,
                 action,
+                permission: Some(E::permission_to_string(permissions)),
             },
         })
     }
@@ -65,7 +68,7 @@ where
         actions::set_content(&self.repository, &self.dir_path, &self.file, content)
     }
 
-    pub fn outcome(&self, secret_keys: &[SecretKey]) -> Result<Outcome, OutcomeError> {
+    pub fn outcome(&self, secret_keys: &[SecretKey]) -> Result<Outcome<E>, OutcomeError> {
         let home = E::home_dir().map_err(|error| OutcomeError {
             target: self.file.target.clone(),
             error,
@@ -81,7 +84,12 @@ where
         Ok(Outcome {
             target: home.join(&self.file.target),
             content,
-            permissions: None,
+            permission: self
+                .file
+                .permission
+                .to_owned()
+                .unwrap_or_else(|| self.file.action.default_permission()),
+            phantom: PhantomData,
         })
     }
 }

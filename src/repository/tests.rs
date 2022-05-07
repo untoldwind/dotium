@@ -20,6 +20,14 @@ impl Environment for TestEnvironment {
             .join(".config")
             .join("dotium"))
     }
+
+    fn permission_to_string(_: std::fs::Permissions) -> String {
+        Default::default()
+    }
+
+    fn permission_from_string(_: &str) -> Option<std::fs::Permissions> {
+        None
+    }
 }
 
 #[test]
@@ -42,7 +50,7 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
     let outcomes = repository
         .files()
         .map(|f| f.outcome(secret_keys))
-        .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
+        .collect::<Result<Vec<Outcome<_>>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
 
@@ -78,7 +86,7 @@ fn track_secret_files() -> Result<(), Box<dyn Error>> {
     let outcomes = repository
         .files()
         .map(|f| f.outcome(secret_keys))
-        .collect::<Result<Vec<Outcome>, OutcomeError>>()?;
+        .collect::<Result<Vec<Outcome<_>>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
 

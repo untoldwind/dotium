@@ -7,6 +7,7 @@ license = "MIT"
 readme = "./README.md"
 repository = "https://github.com/untoldwind/dotium"
 description = "Dot-file management for multiple machines or small teams"
+keywords = ["dotfile", "dotfiles", "dotfiles-manager"]
 
 [dependencies]
 age = { version = "0", features = ["armor", "ssh"] }

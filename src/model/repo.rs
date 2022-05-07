@@ -26,12 +26,23 @@ pub struct FileDescriptor {
     pub source: String,
     pub target: PathBuf,
     pub action: FileAction,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum FileAction {
     AsIs,
     Crypted,
+}
+
+impl FileAction {
+    pub fn default_permission(&self) -> String {
+        match self {
+            FileAction::AsIs => "0644".to_string(),
+            FileAction::Crypted => "0600".to_string(),
+        }
+    }
 }
 
 impl ArgEnum for FileAction {

@@ -1,5 +1,5 @@
 # dotium
-![Crates.io](https://img.shields.io/crates/v/dotium)
+[![Crates.io](https://img.shields.io/crates/v/dotium)](https://crates.io/crates/dotium)
 [![Build](https://github.com/untoldwind/dotium/actions/workflows/build.yml/badge.svg)](https://github.com/untoldwind/dotium/actions/workflows/build.yml)
 
 Dot-file management for multiple machines or small teams.

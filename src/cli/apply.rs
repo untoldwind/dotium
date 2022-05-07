@@ -2,11 +2,11 @@ use std::{error::Error, path::PathBuf};
 
 use clap::Args;
 use console::Style;
-use dialoguer::{theme::ColorfulTheme, FuzzySelect};
+use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect};
 
 use crate::{
     config::ConfigurationHolder,
-    repository::{Changes, DefaultEnvironment, Outcome, Repository},
+    repository::{Changes, DefaultEnvironment, Environment, Outcome, Repository},
     utils::color_diff::ColorDiff,
 };
 
@@ -61,6 +61,9 @@ impl ApplyCommand {
             match outcome.changes()? {
                 Changes::NewFile => confirm_new_file(&outcome)?,
                 Changes::Diff(current) => config_diff(&outcome, &current)?,
+                Changes::ChangePermission(current_permission) => {
+                    config_set_permissions(&outcome, &current_permission)?
+                }
                 Changes::None => continue,
             };
         }
@@ -69,7 +72,7 @@ impl ApplyCommand {
     }
 }
 
-fn confirm_new_file(outcome: &Outcome) -> Result<(), Box<dyn Error>> {
+fn confirm_new_file<E: Environment>(outcome: &Outcome<E>) -> Result<(), Box<dyn Error>> {
     loop {
         match FuzzySelect::with_theme(&ColorfulTheme::default())
             .items(&["Yes", "Skip", "Show details", "Abort"])
@@ -97,7 +100,10 @@ fn confirm_new_file(outcome: &Outcome) -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn config_diff(outcome: &Outcome, current_content: &str) -> Result<(), Box<dyn Error>> {
+fn config_diff<E: Environment>(
+    outcome: &Outcome<E>,
+    current_content: &str,
+) -> Result<(), Box<dyn Error>> {
     loop {
         match FuzzySelect::with_theme(&ColorfulTheme::default())
             .items(&["Yes", "Skip", "Show details", "Abort"])
@@ -118,5 +124,25 @@ fn config_diff(outcome: &Outcome, current_content: &str) -> Result<(), Box<dyn E
             None => return Err("Aborted by user".into()),
             _ => (),
         }
+    }
+}
+
+fn config_set_permissions<E: Environment>(
+    outcome: &Outcome<E>,
+    current_permission: &str,
+) -> Result<(), Box<dyn Error>> {
+    match Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt(format!(
+            "Change permission of {} from {} to {}",
+            outcome.target.to_string_lossy(),
+            current_permission,
+            &outcome.permission
+        ))
+        .default(true)
+        .interact_opt()?
+    {
+        Some(true) => outcome.apply(),
+        Some(false) => Ok(()),
+        None => Err("Aborted by user".into()),
     }
 }

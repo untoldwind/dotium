@@ -4,8 +4,8 @@ on:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 name: Create Release
 jobs:
-  build:
-    name: Create Release
+  release:
+    name: Create Github release
     runs-on: ubuntu-latest
     steps:
     - name: Install requirements
@@ -22,11 +22,6 @@ jobs:
       with:
         command: build
         args: --release --target x86_64-unknown-linux-musl
-    - run: cargo login ${CRATES_IO_TOKEN}
-      env:
-        CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
-    - name: Publish
-      run: cargo publish
     - name: Strip binary
       run: strip dotium
       working-directory: ./target/x86_64-unknown-linux-musl/release
@@ -65,3 +60,21 @@ jobs:
         asset_path: ./target/x86_64-unknown-linux-musl/release/dotium.sha256sum
         asset_name: dotium.sha256sum
         asset_content_type: text/plain
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install requirements
+      run: sudo apt-get install -y musl-tools
+    - name: Install rust target
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        target: x86_64-unknown-linux-musl
+    - uses: actions/checkout@v2
+    - run: cargo login ${CRATES_IO_TOKEN}
+      env:
+        CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+    - name: Publish
+      run: cargo publish

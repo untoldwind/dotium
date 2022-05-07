@@ -34,7 +34,7 @@ jobs:
       run: sha256sum dotium > dotium.sha256sum
       working-directory: ./target/x86_64-unknown-linux-musl/release
     - name: Gzip
-      run: gzip dotium
+      run: gzip -f dotium
       working-directory: ./target/x86_64-unknown-linux-musl/release
     - name: Create Release
       id: create_release

@@ -1,0 +1,67 @@
+on:
+  push:
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+name: Create Release
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install requirements
+      run: sudo apt-get install -y musl-tools
+    - name: Install rust target
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+        target: x86_64-unknown-linux-musl
+    - uses: actions/checkout@v2
+    - name: Build musl
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --target x86_64-unknown-linux-musl
+    - run: cargo login ${CRATES_IO_TOKEN}
+      env:
+        CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+    - name: Publish
+      run: cargo publish
+    - name: Strip binary
+      run: strip dotium
+      working-directory: ./target/x86_64-unknown-linux-musl/release
+    - name: Create sha256sum
+      run: sha256sum dotium > dotium.sha256sum
+      working-directory: ./target/x86_64-unknown-linux-musl/release
+    - name: Gzip
+      run: gzip dotium
+      working-directory: ./target/x86_64-unknown-linux-musl/release
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: ""
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./target/x86_64-unknown-linux-musl/release/dotium.gz
+        asset_name: dotium.gz
+        asset_content_type: application/gzip
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./target/x86_64-unknown-linux-musl/release/dotium.sha256sum
+        asset_name: dotium.sha256sum
+        asset_content_type: text/plain

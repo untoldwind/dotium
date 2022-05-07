@@ -2,8 +2,11 @@
 name = "dotium"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Untoldwind <landru@untoldwind.net>"]
+license = "MIT"
+readme = "./README.md"
+repository = "https://github.com/untoldwind/dotium"
+description = "Dot-file management for multiple machines or small teams"
 
 [dependencies]
 age = { version = "0", features = ["armor", "ssh"] }

@@ -1,12 +1,17 @@
-use std::{error::Error, fs, path::PathBuf};
+use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{model::Recipient, repository::Environment, secret_key::SecretKey};
+use crate::{
+    model::{Recipient, SecretKey},
+    repository::Environment,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Configuration {
     pub default_recipient: Recipient,
+    #[serde(default)]
+    pub variables: HashMap<String, String>,
 }
 
 #[derive(Debug)]
@@ -55,7 +60,10 @@ impl ConfigurationHolder {
 
         let sk = SecretKey::generate();
         let default_recipient = sk.as_recipient(hostname);
-        let configuration = Configuration { default_recipient };
+        let configuration = Configuration {
+            default_recipient,
+            variables: HashMap::new(),
+        };
         let mut config_file = fs::OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -69,6 +77,18 @@ impl ConfigurationHolder {
             .open(&self.keys_file)?;
         sk.write_to(&key_file)?;
 
+        Ok(())
+    }
+
+    pub fn store(&self) -> Result<(), Box<dyn Error>> {
+        if let Some(configuration) = &self.configuration {
+            let mut config_file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(&self.config_file)?;
+            serde_json::to_writer_pretty(&mut config_file, configuration)?;
+        }
         Ok(())
     }
 }

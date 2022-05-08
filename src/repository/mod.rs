@@ -2,8 +2,7 @@ use std::marker::PhantomData;
 use std::rc::Rc;
 use std::{collections::HashMap, error::Error, fs, path::PathBuf};
 
-use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor};
-use crate::secret_key::SecretKey;
+use crate::model::{DirectoryDescriptor, FileAction, Recipient, RootDescriptor, SecretKey};
 
 pub use self::environment::*;
 pub use self::file_ref::FileRef;

@@ -1,6 +1,9 @@
-use std::{error::Error, path::PathBuf};
+use std::{collections::HashMap, error::Error, path::PathBuf};
 
-use crate::{model::FileAction, repository::outcome::OutcomeError, secret_key::SecretKey};
+use crate::{
+    model::{FileAction, MachineContext, SecretKey},
+    repository::outcome::OutcomeError,
+};
 
 use super::{Environment, Outcome, Repository};
 
@@ -34,6 +37,10 @@ impl Environment for TestEnvironment {
 fn track_regular_files() -> Result<(), Box<dyn Error>> {
     let tmp_repo = tempfile::tempdir()?;
     let secret_key = SecretKey::generate();
+    let context = MachineContext {
+        recipient: secret_key.as_recipient("test"),
+        variables: HashMap::new(),
+    };
 
     let mut repository = Repository::<TestEnvironment>::init(
         tmp_repo.path().to_path_buf(),
@@ -49,7 +56,7 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
     let secret_keys = &[secret_key];
     let outcomes = repository
         .files()
-        .map(|f| f.outcome(secret_keys))
+        .map(|f| f.outcome(&context, secret_keys))
         .collect::<Result<Vec<Outcome<_>>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);
@@ -70,6 +77,10 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
 fn track_secret_files() -> Result<(), Box<dyn Error>> {
     let tmp_repo = tempfile::tempdir()?;
     let secret_key = SecretKey::generate();
+    let context = MachineContext {
+        recipient: secret_key.as_recipient("test"),
+        variables: HashMap::new(),
+    };
 
     let mut repository = Repository::<TestEnvironment>::init(
         tmp_repo.path().to_path_buf(),
@@ -85,7 +96,7 @@ fn track_secret_files() -> Result<(), Box<dyn Error>> {
     let secret_keys = &[secret_key];
     let outcomes = repository
         .files()
-        .map(|f| f.outcome(secret_keys))
+        .map(|f| f.outcome(&context, secret_keys))
         .collect::<Result<Vec<Outcome<_>>, OutcomeError>>()?;
 
     assert_eq!(outcomes.len(), 1);

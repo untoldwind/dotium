@@ -11,9 +11,8 @@ use age::{
 };
 
 use crate::{
-    model::FileDescriptor,
+    model::{FileDescriptor, SecretKey},
     repository::{file_ref::RepositoryInfo, Environment},
-    secret_key::SecretKey,
 };
 
 pub fn create_from_target<E: Environment>(

@@ -2,7 +2,7 @@ use clap::Args;
 
 use std::error::Error;
 
-use crate::secret_key::SecretKey;
+use crate::model::SecretKey;
 
 #[derive(Debug, Args)]
 pub struct GenKeyCommand {}

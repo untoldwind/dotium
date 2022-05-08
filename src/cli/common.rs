@@ -1,6 +1,6 @@
 use std::{error::Error, fs};
 
-use crate::{config::ConfigurationHolder, model::Recipient, secret_key::SecretKey};
+use crate::{config::ConfigurationHolder, model::Recipient, model::SecretKey};
 
 pub fn require_self(config: &ConfigurationHolder) -> Result<Recipient, Box<dyn Error>> {
     match &config.configuration {

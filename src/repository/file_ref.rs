@@ -6,10 +6,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{
-    model::{FileAction, FileDescriptor, Recipient},
-    secret_key::SecretKey,
-};
+use crate::model::{FileAction, FileContext, FileDescriptor, MachineContext, Recipient, SecretKey};
 
 use super::{actions, outcome::OutcomeError, Environment, Outcome};
 
@@ -64,18 +61,37 @@ where
         actions::get_content(&self.repository, secret_keys, &self.dir_path, &self.file)
     }
 
+    pub fn get_rendered(
+        &self,
+        machine: &MachineContext,
+        secret_keys: &[SecretKey],
+    ) -> Result<String, Box<dyn Error>> {
+        let file_context = FileContext { machine };
+        actions::get_rendered(
+            &self.repository,
+            &file_context,
+            secret_keys,
+            &self.dir_path,
+            &self.file,
+        )
+    }
+
     pub fn set_content(&self, content: &str) -> Result<(), Box<dyn Error>> {
         actions::set_content(&self.repository, &self.dir_path, &self.file, content)
     }
 
-    pub fn outcome(&self, secret_keys: &[SecretKey]) -> Result<Outcome<E>, OutcomeError> {
+    pub fn outcome(
+        &self,
+        context: &MachineContext,
+        secret_keys: &[SecretKey],
+    ) -> Result<Outcome<E>, OutcomeError> {
         let home = E::home_dir().map_err(|error| OutcomeError {
             target: self.file.target.clone(),
             error,
         })?;
 
         let content = self
-            .get_content(secret_keys)
+            .get_rendered(context, secret_keys)
             .map_err(|error| OutcomeError {
                 target: home.join(&self.file.target),
                 error,

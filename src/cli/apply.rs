@@ -6,11 +6,12 @@ use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect};
 
 use crate::{
     config::ConfigurationHolder,
+    model::MachineContext,
     repository::{Changes, DefaultEnvironment, Environment, Outcome, Repository},
     utils::color_diff::ColorDiff,
 };
 
-use super::common::require_secret_keys;
+use super::common::{require_secret_keys, require_self};
 
 #[derive(Debug, Args)]
 pub struct ApplyCommand {
@@ -30,9 +31,16 @@ impl ApplyCommand {
     ) -> Result<(), Box<dyn Error>> {
         let repository = Repository::<DefaultEnvironment>::open(repository_path)?;
         let secret_keys = require_secret_keys(&config)?;
+        let context = MachineContext {
+            recipient: require_self(&config)?,
+            variables: config
+                .configuration
+                .map(|c| c.variables)
+                .unwrap_or_default(),
+        };
 
         for file in repository.files() {
-            let outcome = match file.outcome(&secret_keys) {
+            let outcome = match file.outcome(&context, &secret_keys) {
                 Ok(outcome) => outcome,
                 Err(outcome_error) => {
                     let red = Style::new().red();

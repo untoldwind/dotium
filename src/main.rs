@@ -9,7 +9,6 @@ mod cli;
 mod config;
 mod model;
 mod repository;
-mod secret_key;
 mod utils;
 
 #[derive(Debug, Parser)]

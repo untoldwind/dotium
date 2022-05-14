@@ -1,6 +1,6 @@
 [package]
 name = "dotium"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 authors = ["Untoldwind <landru@untoldwind.net>"]
 license = "MIT"
@@ -16,7 +16,7 @@ console = "0"
 dialoguer = { version = "0", features = ["fuzzy-select"] }
 clap = { version = "3", features = ["cargo", "derive"] }
 clap_complete = "3"
-dissimilar = "1"
+diff = "0"
 dirs = "4"
 gethostname = "0"
 itertools = "0"

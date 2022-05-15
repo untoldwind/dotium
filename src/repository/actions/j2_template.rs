@@ -52,7 +52,12 @@ pub fn get_rendered<E: Environment>(
     context.insert("recipient", &file_context.machine.recipient.name);
     context.insert("machine", &file_context.machine.variables);
 
-    tera.add_template_file(source, Some(&file.source))?;
+    if let Err(err) = tera.add_template_file(source, Some(&file.source)) {
+        return match err.source() {
+            Some(source) => Err(format!("{} {}", err, source).into()),
+            _ => Err(err.into()),
+        }
+    }
 
     match tera.render(&file.source, &context) {
         Ok(content) => Ok(content),

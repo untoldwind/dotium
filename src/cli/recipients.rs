@@ -81,7 +81,6 @@ impl RecipientsCommand {
         for recipient in repository.recipient_requests() {
             match Confirm::with_theme(&ColorfulTheme::default())
                 .with_prompt(format!("Approve {}", recipient))
-                .default(false)
                 .interact_opt()?
             {
                 Some(true) => approved.push(recipient.clone()),
@@ -89,8 +88,10 @@ impl RecipientsCommand {
                 None => return Err("Aborted by user".into()),
             }
         }
-
-        repository.approve_recipients(&approved, &secret_keys)
+        if !approved.is_empty() {
+            repository.approve_recipients(&approved, &secret_keys)?;
+        }
+        Ok(())
     }
 
     fn add_self(

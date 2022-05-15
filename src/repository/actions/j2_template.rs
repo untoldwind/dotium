@@ -56,7 +56,7 @@ pub fn get_rendered<E: Environment>(
         return match err.source() {
             Some(source) => Err(format!("{} {}", err, source).into()),
             _ => Err(err.into()),
-        }
+        };
     }
 
     match tera.render(&file.source, &context) {

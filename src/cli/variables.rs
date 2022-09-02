@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use clap::{Args, Subcommand};
-use prettytable::{cell, row, Table};
+use prettytable::{row, Table};
 
 use crate::config::ConfigurationHolder;
 

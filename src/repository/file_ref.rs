@@ -180,6 +180,7 @@ fn source_file_from_target<P: AsRef<Path>>(target: P) -> (PathBuf, String) {
     if target.as_ref().is_absolute() {
         dir_path.push("root");
     }
+
     if let Some(parent) = target.as_ref().parent() {
         for part in parent {
             if part.to_string_lossy().starts_with('.') {
@@ -190,12 +191,24 @@ fn source_file_from_target<P: AsRef<Path>>(target: P) -> (PathBuf, String) {
         }
     }
 
+    if dir_path.as_os_str().is_empty() {
+        dir_path.push("home")
+    }
+
     (
         dir_path,
         target
             .as_ref()
             .file_name()
-            .map(|n| n.to_string_lossy().to_string())
+            .map(|name| {
+                let name = name.to_string_lossy();
+
+                if name.starts_with('.') {
+                    name[1..].to_string()
+                } else {
+                    name.to_string()
+                }
+            })
             .unwrap_or_default(),
     )
 }

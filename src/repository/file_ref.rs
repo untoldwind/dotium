@@ -203,8 +203,8 @@ fn source_file_from_target<P: AsRef<Path>>(target: P) -> (PathBuf, String) {
             .map(|name| {
                 let name = name.to_string_lossy();
 
-                if name.starts_with('.') {
-                    name[1..].to_string()
+                if let Some(stripped) = name.strip_prefix('.') {
+                    stripped.to_string()
                 } else {
                     name.to_string()
                 }

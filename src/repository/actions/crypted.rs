@@ -27,8 +27,9 @@ pub fn create_from_target<E: Environment>(
         info.recipients
             .iter()
             .map(|r| r.to_age())
-            .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?,
-    );
+            .collect::<Result<Vec<Box<dyn Recipient + Send + 'static>>, Box<dyn Error>>>()?,
+    )
+    .ok_or("No recipients")?;
 
     if let Some(parent) = source.parent() {
         fs::create_dir_all(parent)?;
@@ -83,8 +84,9 @@ pub fn set_content<E: Environment>(
         info.recipients
             .iter()
             .map(|r| r.to_age())
-            .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?,
-    );
+            .collect::<Result<Vec<Box<dyn Recipient + Send + 'static>>, Box<dyn Error>>>()?,
+    )
+    .ok_or("No recipients")?;
     let output_file = fs::OpenOptions::new()
         .write(true)
         .create(true)

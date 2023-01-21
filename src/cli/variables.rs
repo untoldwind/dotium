@@ -40,14 +40,10 @@ impl VariablesCommand {
         mut config: ConfigurationHolder,
         args: &SetMachineArgs,
     ) -> Result<(), Box<dyn Error>> {
-        let configuration =
-            match &mut config.configuration {
-                Some(configuration) => configuration,
-                None => return Err(
-                    "Dotium not initialized. Use 'dotium init' or create configuration manually"
-                        .into(),
-                ),
-            };
+        let configuration = config
+            .configuration
+            .as_mut()
+            .ok_or("Dotium not initialized. Use 'dotium init' or create configuration manually")?;
 
         configuration
             .variables

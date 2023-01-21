@@ -14,13 +14,13 @@ pub struct DefaultEnvironment {}
 
 impl Environment for DefaultEnvironment {
     fn home_dir() -> Result<PathBuf, Box<dyn Error>> {
-        dirs::home_dir().ok_or_else::<Box<dyn Error>, _>(|| "no home directory".into())
+        Ok(dirs::home_dir().ok_or("no home directory")?)
     }
 
     fn config_dir() -> Result<PathBuf, Box<dyn Error>> {
-        dirs::config_dir()
+        Ok(dirs::config_dir()
             .map(|dir| dir.join("dotium"))
-            .ok_or_else(|| "Unable to get config dir".into())
+            .ok_or("Unable to get config dir")?)
     }
 
     #[cfg(unix)]
@@ -43,10 +43,7 @@ impl Environment for DefaultEnvironment {
     fn permission_from_string(text: &str) -> Option<fs::Permissions> {
         use std::{fs::Permissions, os::unix::prelude::PermissionsExt};
 
-        match u32::from_str_radix(text, 8) {
-            Ok(mode) => Some(Permissions::from_mode(mode)),
-            _ => None,
-        }
+        u32::from_str_radix(text, 8).map(Permissions::from_mode).ok()
     }
 
     #[cfg(not(unix))]

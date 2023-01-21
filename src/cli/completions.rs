@@ -6,7 +6,7 @@ use std::io;
 
 #[derive(Debug, Args)]
 pub struct CompletionCommand {
-    #[clap(arg_enum)]
+    #[clap(value_enum)]
     shell: Shell,
 }
 

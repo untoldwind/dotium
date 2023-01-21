@@ -14,8 +14,8 @@ age = { version = "0", features = ["armor", "ssh"] }
 chrono = "0"
 console = "0"
 dialoguer = { version = "0", features = ["fuzzy-select"] }
-clap = { version = "3", features = ["cargo", "derive"] }
-clap_complete = "3"
+clap = { version = "4", features = ["cargo", "derive"] }
+clap_complete = "4"
 diff = "0"
 dirs = "4"
 gethostname = "0"

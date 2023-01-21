@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{ArgEnum, PossibleValue};
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 
 use super::Recipient;
@@ -30,7 +30,7 @@ pub struct FileDescriptor {
     pub permission: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, ValueEnum)]
 pub enum FileAction {
     AsIs,
     Crypted,
@@ -43,19 +43,5 @@ impl FileAction {
             FileAction::AsIs | FileAction::J2 => "0644".to_string(),
             FileAction::Crypted => "0600".to_string(),
         }
-    }
-}
-
-impl ArgEnum for FileAction {
-    fn value_variants<'a>() -> &'a [Self] {
-        &[FileAction::AsIs, FileAction::Crypted, FileAction::J2]
-    }
-
-    fn to_possible_value<'a>(&self) -> Option<PossibleValue<'a>> {
-        Some(match self {
-            FileAction::AsIs => PossibleValue::new("as-is"),
-            FileAction::Crypted => PossibleValue::new("crypted"),
-            FileAction::J2 => PossibleValue::new("j2"),
-        })
     }
 }

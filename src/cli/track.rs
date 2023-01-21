@@ -17,7 +17,7 @@ use crate::{
 pub struct TrackCommand {
     #[clap(help = "File or directory to add to repository")]
     file_or_directory: PathBuf,
-    #[clap(short, long, arg_enum, default_value = "as-is")]
+    #[clap(short, long, value_enum, default_value = "as-is")]
     action: FileAction,
 }
 

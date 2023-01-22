@@ -50,6 +50,12 @@ where
         })
     }
 
+    pub fn absolute_target(&self) -> Result<PathBuf, Box<dyn Error>> {
+        let home = E::home_dir()?;
+
+        Ok(home.join(&self.file.target))
+    }
+
     pub fn absolute_source(&self) -> PathBuf {
         self.repository
             .directory
@@ -85,7 +91,7 @@ where
         context: &MachineContext,
         secret_keys: &[SecretKey],
     ) -> Result<Outcome<E>, OutcomeError> {
-        let home = E::home_dir().map_err(|error| OutcomeError {
+        let target = self.absolute_target().map_err(|error| OutcomeError {
             target: self.file.target.clone(),
             error,
         })?;
@@ -93,12 +99,12 @@ where
         let content = self
             .get_rendered(context, secret_keys)
             .map_err(|error| OutcomeError {
-                target: home.join(&self.file.target),
+                target: target.clone(),
                 error,
             })?;
 
         Ok(Outcome {
-            target: home.join(&self.file.target),
+            target,
             content,
             permission: self
                 .file

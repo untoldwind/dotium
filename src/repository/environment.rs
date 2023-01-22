@@ -10,6 +10,7 @@ pub trait Environment {
     fn permission_from_string(text: &str) -> Option<fs::Permissions>;
 }
 
+#[derive(Debug)]
 pub struct DefaultEnvironment {}
 
 impl Environment for DefaultEnvironment {

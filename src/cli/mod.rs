@@ -13,6 +13,7 @@ mod init;
 mod init_repo;
 mod recipients;
 mod track;
+mod update;
 mod variables;
 
 #[derive(Debug, Subcommand)]
@@ -33,6 +34,8 @@ pub enum MainCommand {
     Recipients(recipients::RecipientsCommand),
     #[clap(about = "Track dot-file (i.e. add it to repository")]
     Track(track::TrackCommand),
+    #[clap(about = "Update repository file from current config (reverse of apply)")]
+    Update(update::UpdateCommand),
     #[clap(about = "Manage variables")]
     Variables(variables::VariablesCommand),
 }
@@ -52,6 +55,7 @@ impl MainCommand {
             MainCommand::InitRepo(cmd) => cmd.run(config, repository_path),
             MainCommand::Recipients(cmd) => cmd.run(config, repository_path),
             MainCommand::Track(cmd) => cmd.run(repository_path),
+            MainCommand::Update(cmd) => cmd.run(config, repository_path),
             MainCommand::Variables(cmd) => cmd.run(config),
         }
     }

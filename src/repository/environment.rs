@@ -43,7 +43,9 @@ impl Environment for DefaultEnvironment {
     fn permission_from_string(text: &str) -> Option<fs::Permissions> {
         use std::{fs::Permissions, os::unix::prelude::PermissionsExt};
 
-        u32::from_str_radix(text, 8).map(Permissions::from_mode).ok()
+        u32::from_str_radix(text, 8)
+            .map(Permissions::from_mode)
+            .ok()
     }
 
     #[cfg(not(unix))]

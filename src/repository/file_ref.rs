@@ -138,19 +138,7 @@ impl<E> Eq for FileRef<E> {}
 
 impl<E> PartialOrd for FileRef<E> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        match self
-            .repository
-            .directory
-            .partial_cmp(&other.repository.directory)
-        {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        match self.dir_path.partial_cmp(&other.dir_path) {
-            Some(core::cmp::Ordering::Equal) => {}
-            ord => return ord,
-        }
-        self.file.partial_cmp(&other.file)
+        Some(self.cmp(other))
     }
 }
 

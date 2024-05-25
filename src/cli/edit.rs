@@ -1,4 +1,4 @@
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, path::PathBuf, str};
 
 use clap::Args;
 use dialoguer::{theme::ColorfulTheme, Editor, FuzzySelect};
@@ -33,9 +33,10 @@ impl EditCommand {
         {
             let file = &files[index];
             let content = file.get_content(&secret_keys)?;
+            let content = str::from_utf8(&content)?;
 
-            if let Some(new_content) = Editor::new().trim_newlines(false).edit(&content)? {
-                file.set_content(&new_content)?;
+            if let Some(new_content) = Editor::new().trim_newlines(false).edit(content)? {
+                file.set_content(new_content.as_bytes())?;
             }
         }
 

@@ -4,10 +4,10 @@ use clap::Args;
 use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 
 use crate::{
+    cli::common::show_color_diff,
     config::ConfigurationHolder,
     model::FileAction,
     repository::{DefaultEnvironment, Environment, FileRef, Repository},
-    utils::color_diff::ColorDiff,
 };
 
 use super::common::require_secret_keys;
@@ -37,7 +37,7 @@ impl UpdateCommand {
                     .into());
                 }
                 let repository_content = file.get_content(&secret_keys)?;
-                let current_content = fs::read_to_string(&self.file_or_directory)?;
+                let current_content = fs::read(&self.file_or_directory)?;
 
                 if repository_content == current_content {
                     println!("No diff {}", &self.file_or_directory.to_string_lossy());
@@ -58,8 +58,8 @@ impl UpdateCommand {
 
 fn update_diff<E: Environment>(
     file_ref: &FileRef<E>,
-    repository_content: &str,
-    current_content: &str,
+    repository_content: &[u8],
+    current_content: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     loop {
         match FuzzySelect::with_theme(&ColorfulTheme::default())
@@ -76,7 +76,7 @@ fn update_diff<E: Environment>(
                 println!();
                 println!("{}", file_ref.file.target.to_string_lossy());
                 println!("-------------------------------------------------------------------------------");
-                println!("{}", ColorDiff::new(repository_content, current_content));
+                show_color_diff(repository_content, current_content);
                 println!("-------------------------------------------------------------------------------");
             }
             Some(2) => return Ok(()),

@@ -1,6 +1,10 @@
-use std::{error::Error, fs};
+use std::{error::Error, fs, str};
 
-use crate::{config::ConfigurationHolder, model::Recipient, model::SecretKey};
+use crate::{
+    config::ConfigurationHolder,
+    model::{Recipient, SecretKey},
+    utils::color_diff::ColorDiff,
+};
 
 pub fn require_self(config: &ConfigurationHolder) -> Result<Recipient, Box<dyn Error>> {
     match &config.configuration {
@@ -24,4 +28,14 @@ pub fn require_secret_keys(config: &ConfigurationHolder) -> Result<Vec<SecretKey
     } else {
         Ok(secret_keys)
     }
+}
+
+pub fn show_color_diff(left: &[u8], right: &[u8]) {
+    match (str::from_utf8(left), str::from_utf8(right)) {
+        (Ok(left), Ok(right)) => {
+            println!("{}", ColorDiff::new(left, right))
+        }
+
+        _ => println!("Binary content"),
+    };
 }

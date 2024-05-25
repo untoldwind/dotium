@@ -26,10 +26,10 @@ pub fn get_content<E: Environment>(
     info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Vec<u8>, Box<dyn Error>> {
     let source = info.directory.join(dir_path).join(&file.source);
 
-    let content = fs::read_to_string(source)?;
+    let content = fs::read(source)?;
 
     Ok(content)
 }
@@ -38,7 +38,7 @@ pub fn set_content<E: Environment>(
     info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: &str,
+    content: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     let source = info.directory.join(dir_path).join(&file.source);
 

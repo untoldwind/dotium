@@ -67,7 +67,7 @@ fn track_regular_files() -> Result<(), Box<dyn Error>> {
     );
     assert_eq!(
         outcomes[0].content,
-        "This is some\nfancy \nconfig file\nthat\ndoes not\nrequire\nprotection\n"
+        b"This is some\nfancy \nconfig file\nthat\ndoes not\nrequire\nprotection\n"
     );
 
     Ok(())
@@ -107,7 +107,7 @@ fn track_secret_files() -> Result<(), Box<dyn Error>> {
     );
     assert_eq!(
         outcomes[0].content,
-        "This is\na very\nsecret config\nthat has to be\nfully protected.\nFailing to do so\nwill reveal\nhow the moon landing was staged and\nthat the earth is indeed flat.\n"
+        b"This is\na very\nsecret config\nthat has to be\nfully protected.\nFailing to do so\nwill reveal\nhow the moon landing was staged and\nthat the earth is indeed flat.\n"
     );
 
     Ok(())

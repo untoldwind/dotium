@@ -5,14 +5,14 @@ use super::Environment;
 #[derive(Debug)]
 pub enum Changes {
     NewFile,
-    Diff(String),
+    Diff(Vec<u8>),
     ChangePermission(String),
     None,
 }
 #[derive(Debug)]
 pub struct Outcome<E> {
     pub target: PathBuf,
-    pub content: String,
+    pub content: Vec<u8>,
     pub permission: String,
     pub phantom: PhantomData<E>,
 }
@@ -23,7 +23,7 @@ where
 {
     pub fn changes(&self) -> Result<Changes, Box<dyn Error>> {
         if self.target.exists() {
-            let current_content = fs::read_to_string(&self.target)?;
+            let current_content = fs::read(&self.target)?;
 
             if current_content == self.content {
                 let current_permission =

@@ -1,14 +1,14 @@
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, path::PathBuf, str};
 
 use clap::Args;
 use console::Style;
 use dialoguer::{theme::ColorfulTheme, Confirm, FuzzySelect};
 
 use crate::{
+    cli::common::show_color_diff,
     config::ConfigurationHolder,
     model::MachineContext,
     repository::{Changes, DefaultEnvironment, Environment, Outcome, Repository},
-    utils::color_diff::ColorDiff,
 };
 
 use super::common::{require_secret_keys, require_self};
@@ -97,7 +97,10 @@ fn confirm_new_file<E: Environment>(outcome: &Outcome<E>) -> Result<(), Box<dyn 
                 println!();
                 println!("{}", outcome.target.to_string_lossy());
                 println!("-------------------------------------------------------------------------------");
-                println!("{}", outcome.content);
+                println!(
+                    "{}",
+                    str::from_utf8(&outcome.content).unwrap_or("Binary content")
+                );
                 println!();
                 println!("-------------------------------------------------------------------------------");
             }
@@ -110,7 +113,7 @@ fn confirm_new_file<E: Environment>(outcome: &Outcome<E>) -> Result<(), Box<dyn 
 
 fn config_diff<E: Environment>(
     outcome: &Outcome<E>,
-    current_content: &str,
+    current_content: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     loop {
         match FuzzySelect::with_theme(&ColorfulTheme::default())
@@ -125,7 +128,7 @@ fn config_diff<E: Environment>(
                 println!();
                 println!("{}", outcome.target.to_string_lossy());
                 println!("-------------------------------------------------------------------------------");
-                println!("{}", ColorDiff::new(current_content, &outcome.content));
+                show_color_diff(current_content, &outcome.content);
                 println!("-------------------------------------------------------------------------------");
             }
             Some(3) => return Err("Aborted by user".into()),

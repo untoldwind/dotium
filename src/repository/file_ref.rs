@@ -63,7 +63,7 @@ where
             .join(&self.file.source)
     }
 
-    pub fn get_content(&self, secret_keys: &[SecretKey]) -> Result<String, Box<dyn Error>> {
+    pub fn get_content(&self, secret_keys: &[SecretKey]) -> Result<Vec<u8>, Box<dyn Error>> {
         actions::get_content(&self.repository, secret_keys, &self.dir_path, &self.file)
     }
 
@@ -71,7 +71,7 @@ where
         &self,
         machine: &MachineContext,
         secret_keys: &[SecretKey],
-    ) -> Result<String, Box<dyn Error>> {
+    ) -> Result<Vec<u8>, Box<dyn Error>> {
         let file_context = FileContext { machine };
         actions::get_rendered(
             &self.repository,
@@ -82,7 +82,7 @@ where
         )
     }
 
-    pub fn set_content(&self, content: &str) -> Result<(), Box<dyn Error>> {
+    pub fn set_content(&self, content: &[u8]) -> Result<(), Box<dyn Error>> {
         actions::set_content(&self.repository, &self.dir_path, &self.file, content)
     }
 

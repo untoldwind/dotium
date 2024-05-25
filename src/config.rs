@@ -71,7 +71,6 @@ impl ConfigurationHolder {
         serde_json::to_writer_pretty(&mut config_file, &configuration)?;
 
         let key_file = fs::OpenOptions::new()
-            .write(true)
             .append(true)
             .create(true)
             .open(&self.keys_file)?;

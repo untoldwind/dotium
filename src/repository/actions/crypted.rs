@@ -56,16 +56,16 @@ pub fn get_content<E: Environment>(
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
     file: &FileDescriptor,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Vec<u8>, Box<dyn Error>> {
     let source = info.directory.join(dir_path).join(&file.source);
 
     if let Decryptor::Recipients(decryptor) =
         Decryptor::new(ArmoredReader::new(fs::File::open(source)?))?
     {
-        let mut content = String::new();
+        let mut content = vec![];
         decryptor
             .decrypt(secret_keys.iter().map(|s| s.to_age()))?
-            .read_to_string(&mut content)?;
+            .read_to_end(&mut content)?;
 
         Ok(content)
     } else {
@@ -77,7 +77,7 @@ pub fn set_content<E: Environment>(
     info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: &str,
+    content: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     let source = info.directory.join(dir_path).join(&file.source);
     let encryptor = Encryptor::with_recipients(
@@ -96,7 +96,7 @@ pub fn set_content<E: Environment>(
     let mut output =
         encryptor.wrap_output(ArmoredWriter::wrap_output(output_file, Format::AsciiArmor)?)?;
 
-    output.write_all(content.as_bytes())?;
+    output.write_all(content)?;
 
     output.finish()?.finish()?;
 

@@ -25,7 +25,7 @@ pub fn get_content<E: Environment>(
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
     file: &FileDescriptor,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Vec<u8>, Box<dyn Error>> {
     match file.action {
         FileAction::AsIs => as_is::get_content(info, dir_path, file),
         FileAction::Crypted => crypted::get_content(info, secret_keys, dir_path, file),
@@ -39,7 +39,7 @@ pub fn get_rendered<E: Environment>(
     secret_keys: &[SecretKey],
     dir_path: &PathBuf,
     file: &FileDescriptor,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<Vec<u8>, Box<dyn Error>> {
     match file.action {
         FileAction::AsIs => as_is::get_content(info, dir_path, file),
         FileAction::Crypted => crypted::get_content(info, secret_keys, dir_path, file),
@@ -51,7 +51,7 @@ pub fn set_content<E: Environment>(
     info: &RepositoryInfo<E>,
     dir_path: &PathBuf,
     file: &FileDescriptor,
-    content: &str,
+    content: &[u8],
 ) -> Result<(), Box<dyn Error>> {
     match file.action {
         FileAction::AsIs => as_is::set_content(info, dir_path, file, content),

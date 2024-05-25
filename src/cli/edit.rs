@@ -11,7 +11,10 @@ use crate::{
 use super::common::require_secret_keys;
 
 #[derive(Debug, Args)]
-pub struct EditCommand {}
+pub struct EditCommand {
+    #[clap(help = "Repository entry to edit")]
+    entry: Option<PathBuf>,
+}
 
 impl EditCommand {
     pub fn run(
@@ -23,6 +26,22 @@ impl EditCommand {
         let secret_keys = require_secret_keys(&config)?;
 
         let mut files = repository.files().collect::<Vec<FileRef<_>>>();
+
+        if let Some(entry) = &self.entry {
+            if let Some(file) = files
+                .iter()
+                .find(|f| entry == &f.dir_path.join(&f.file.source))
+            {
+                let content = file.get_content(&secret_keys)?;
+                let content = str::from_utf8(&content)?;
+
+                if let Some(new_content) = Editor::new().trim_newlines(false).edit(content)? {
+                    file.set_content(new_content.as_bytes())?;
+                }
+
+                return Ok(());
+            }
+        }
 
         files.sort();
 

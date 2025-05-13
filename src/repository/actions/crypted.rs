@@ -27,9 +27,10 @@ pub fn create_from_target<E: Environment>(
         info.recipients
             .iter()
             .map(|r| r.to_age())
-            .collect::<Result<Vec<Box<dyn Recipient + Send + 'static>>, Box<dyn Error>>>()?,
-    )
-    .ok_or("No recipients")?;
+            .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?
+            .iter()
+            .map(|r| r.as_ref()),
+    )?;
 
     if let Some(parent) = source.parent() {
         fs::create_dir_all(parent)?;
@@ -58,19 +59,14 @@ pub fn get_content<E: Environment>(
     file: &FileDescriptor,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
     let source = info.directory.join(dir_path).join(&file.source);
+    let decryptor = Decryptor::new(ArmoredReader::new(fs::File::open(source)?))?;
 
-    if let Decryptor::Recipients(decryptor) =
-        Decryptor::new(ArmoredReader::new(fs::File::open(source)?))?
-    {
-        let mut content = vec![];
-        decryptor
-            .decrypt(secret_keys.iter().map(|s| s.to_age()))?
-            .read_to_end(&mut content)?;
+    let mut content = vec![];
+    decryptor
+        .decrypt(secret_keys.iter().map(|s| s.to_age()))?
+        .read_to_end(&mut content)?;
 
-        Ok(content)
-    } else {
-        Err("Invalid encryption format: No recipients".into())
-    }
+    Ok(content)
 }
 
 pub fn set_content<E: Environment>(
@@ -84,9 +80,11 @@ pub fn set_content<E: Environment>(
         info.recipients
             .iter()
             .map(|r| r.to_age())
-            .collect::<Result<Vec<Box<dyn Recipient + Send + 'static>>, Box<dyn Error>>>()?,
-    )
-    .ok_or("No recipients")?;
+            .collect::<Result<Vec<Box<dyn Recipient>>, Box<dyn Error>>>()?
+            .iter()
+            .map(|r| r.as_ref()),
+    )?;
+
     let output_file = fs::OpenOptions::new()
         .write(true)
         .create(true)

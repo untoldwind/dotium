@@ -9,7 +9,7 @@ pub struct Recipient {
 }
 
 impl Recipient {
-    pub fn to_age(&self) -> Result<Box<dyn age::Recipient + Send + 'static>, Box<dyn Error>> {
+    pub fn to_age(&self) -> Result<Box<dyn age::Recipient>, Box<dyn Error>> {
         Ok(age::x25519::Recipient::from_str(&self.key).map(Box::new)?)
     }
 }

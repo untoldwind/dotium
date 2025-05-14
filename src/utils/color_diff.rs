@@ -23,7 +23,7 @@ impl<'a> ColorDiff<'a> {
     }
 }
 
-impl<'a> fmt::Display for ColorDiff<'a> {
+impl fmt::Display for ColorDiff<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write_lines(f, self.expected, self.actual)
     }

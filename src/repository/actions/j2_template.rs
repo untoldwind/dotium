@@ -54,7 +54,7 @@ pub fn get_rendered<E: Environment>(
 
     if let Err(err) = tera.add_template_file(source, Some(&file.source)) {
         return match err.source() {
-            Some(source) => Err(format!("{} {}", err, source).into()),
+            Some(source) => Err(format!("{err} {source}").into()),
             _ => Err(err.into()),
         };
     }
@@ -62,7 +62,7 @@ pub fn get_rendered<E: Environment>(
     match tera.render(&file.source, &context) {
         Ok(content) => Ok(content.into_bytes()),
         Err(err) => match err.source() {
-            Some(source) => Err(format!("{}", source).into()),
+            Some(source) => Err(format!("{source}").into()),
             _ => Err(err.into()),
         },
     }

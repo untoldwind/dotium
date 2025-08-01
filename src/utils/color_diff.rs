@@ -99,7 +99,7 @@ pub(crate) fn write_lines<TWrite: fmt::Write>(
             // If the text is unchanged, just print it plain
             (::diff::Result::Both(value, _), _) => {
                 previous_deletion.flush(f)?;
-                writeln!(f, " {}", value)?;
+                writeln!(f, " {value}")?;
             }
             // Defer any deletions to next loop
             (::diff::Result::Left(deleted), _) => {

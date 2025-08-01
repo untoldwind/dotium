@@ -80,7 +80,7 @@ impl RecipientsCommand {
 
         for recipient in repository.recipient_requests() {
             match Confirm::with_theme(&ColorfulTheme::default())
-                .with_prompt(format!("Approve {}", recipient))
+                .with_prompt(format!("Approve {recipient}"))
                 .interact_opt()?
             {
                 Some(true) => approved.push(recipient.clone()),

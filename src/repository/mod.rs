@@ -100,7 +100,7 @@ where
             let file_ref = FileRef::new(self.info.clone(), target, action)?;
 
             if file_ref.absolute_source().exists() {
-                return Err(format!("{} already in repository", file_ref).into());
+                return Err(format!("{file_ref} already in repository").into());
             }
 
             actions::create_from_target(&self.info, &file_ref.dir_path, &file_ref.file)?;

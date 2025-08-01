@@ -50,6 +50,6 @@ fn main() {
 
 fn exit_on_error(err: Box<dyn Error>) -> ! {
     let style = Style::new().bold().red();
-    println!("{}", style.apply_to(format!("{}", err)));
+    println!("{}", style.apply_to(format!("{err}")));
     std::process::exit(1);
 }

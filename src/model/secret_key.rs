@@ -30,7 +30,7 @@ impl SecretKey {
             "# created: {}",
             chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
         )?;
-        writeln!(out, "# public key: {}", pk)?;
+        writeln!(out, "# public key: {pk}")?;
         writeln!(out, "{}", self.0.to_string().expose_secret())?;
 
         Ok(())
